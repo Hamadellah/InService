@@ -9,7 +9,7 @@ use App\Models\Client;
 class ProfileController extends Controller
 {
    public function completeProfile(Request $request){
-    $user = $request->user();
+    $user = auth()->user();
     if($user->role === 'client'){
         $client = $user->client;
         $client->update([
@@ -26,7 +26,6 @@ class ProfileController extends Controller
             'experience' => $request->experience,
             'price' => $request->price,
             'availability' => $request->availability,
-            'average_rating' => $request->average_rating,
         ]);
         return response()->json([
             'message' => 'Technicien profile retrieved successfully',

@@ -15,6 +15,11 @@ class ClientMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->user()->role !== 'client') {
+            return response()->json([
+                'message' => 'Unauthorized. Client role required.'
+            ], 403);
+        }
         return $next($request);
     }
 }

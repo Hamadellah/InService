@@ -15,6 +15,11 @@ class TechnicienMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->user()->role !== 'technicien') {
+            return response()->json([
+                'message' => 'Unauthorized. Technicien role required.'
+            ], 403);
+        }
         return $next($request);
     }
 }
