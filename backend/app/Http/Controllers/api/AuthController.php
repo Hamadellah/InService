@@ -43,8 +43,8 @@ class AuthController extends Controller
                 "bio"=>null,
                 "experience"=>null,
                 "price"=>null,
-                "avilability"=>null,
-                "avarage_rating"=>null,
+                "availability"=>null,
+                "average_rating"=>null,
                 'address' => $request->address,
             ]);
         }
@@ -70,7 +70,17 @@ class AuthController extends Controller
     $token = $user->createToken('auth_token')->plainTextToken;
     return response()->json([
         'message' => 'Login successful',
+        "user" => $user->load([
+            'client',
+            'technicien'
+        ]),
         "token" => $token
     ], 200);
    } 
+   public function logout(Request $request){
+    $request->user()->currentAccessToken()->delete();
+        return response()->json([
+            'message' => 'logout successfully'
+        ], 200);
+   }
 }

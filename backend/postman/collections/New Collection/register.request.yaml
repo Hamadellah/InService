@@ -1,4 +1,23 @@
 $kind: http-request
-url: ""
-method: GET
+url: http://127.0.0.1:8000/api/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"Ahmed Alaoui\",\r
+
+    \  \"email\": \"hhh@gmail.com\",\r
+
+    \  \"password\": \"Password123!\",\r
+
+    \  \"role\": \"client\",\r
+
+    \  \"city\": \"Beni Mellal\",\r
+
+    \  \"phone\": \"0612345678\",\r
+
+    \  \"image\": \"profile.jpg\"\r
+
+    }"
 order: 1788774271711
