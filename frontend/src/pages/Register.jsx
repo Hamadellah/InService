@@ -69,7 +69,7 @@ export default function Register() {
             />
             <input
                 name="image"
-                type="file"
+                type="text"
                 placeholder="Image"
                 onChange={handleChange}
             />
