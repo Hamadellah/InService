@@ -43,7 +43,7 @@ class AuthController extends Controller
                 "bio"=>null,
                 "experience"=>null,
                 "price"=>null,
-                "availability"=>null,
+                "availability"=>true,
                 "average_rating"=>null,
                 'address' => $request->address,
             ]);
