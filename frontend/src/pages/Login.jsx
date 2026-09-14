@@ -14,22 +14,26 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await login(email, password);
-      console.log("Connexion réussie:", response);
-      if (response.user.role === "technician") {
-        navigate("/technician/TechnicienDashboard");
-      }else if (response.user.role === "client") {
-        navigate("/client/ClientDashboard");
-      }else if (response.user.role === "admin") {
-        navigate("/admin/AdminDashboard");
-      }
-    } catch (error) {
-      console.error("Erreur lors de la connexion:", error);
-      alert("mot de passe ou email incorrect");
+  e.preventDefault();
+
+  try {
+    const response = await login(email, password);
+
+    console.log("Connexion réussie:", response);
+
+    if (response.user.role === "technicien") {
+      navigate("/technicien/TechnicienDashboard");
+    } else if (response.user.role === "client") {
+      navigate("/client/ClientDashboard");
+    } else if (response.user.role === "admin") {
+      navigate("/admin/AdminDashboard");
     }
+
+  } catch (error) {
+    console.error("Erreur lors de la connexion:", error);
+    alert("Mot de passe ou email incorrect");
   }
+};
 
 return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">

@@ -2,11 +2,15 @@
 import { createBrowserRouter } from "react-router-dom";
 
 
-// Pages publiques
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/dashboard";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
+
+
+import TechnicienDashboard from "./pages/technicien/TechnicienDashboard";
+import ClientDashboard from "./pages/client/ClientDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 
 
@@ -24,10 +28,10 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
   {
-    path: "/technician/TechnicienDashboard",
+    path: "/technicien/TechnicienDashboard",
     element:(
-      <ProtectedRoute role="technician">
-        <TechnicianDashboard />
+      <ProtectedRoute role="technicien">
+        <TechnicienDashboard />
       </ProtectedRoute>
     )
   },
