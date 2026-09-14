@@ -1,4 +1,21 @@
 $kind: http-request
-url: ""
-method: GET
+url: http://127.0.0.1:8000/api/profile
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"bio\":\"hello word\",\r
+
+    \    \"experience\":\"2yers\",\r
+
+    \    \"price\":\"300\",\r
+
+    \    \"availability\":true\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: 7|u5GmYXOrmzurFaIz6YW6cOeQKaylNgvPuMtQ5ks751e9fb72
 order: 4414918652008508

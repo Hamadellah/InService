@@ -1,0 +1,21 @@
+$kind: http-request
+url: http://127.0.0.1:8000/api/updateService/2
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"category_id\":1,\r
+
+    \    \"title\":\"trecien\",\r
+
+    \    \"description\":\"hello hello\",\r
+
+    \    \"price\":\"3000\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: 11|kEllW1ScqxUkmDtqAQQRS9u4JRbBhtCbodOUJRsSac6c9441
+order: 4457620939065018

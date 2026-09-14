@@ -13,5 +13,7 @@ Route::put('/profile',[ProfileController::class,'completeProfile'])->middleware(
 Route::get('/services',[ServiceController::class,'show']);
 Route::middleware(['auth:sanctum','technicien'])->group(function(){
     Route::post('/addService',[ServiceController::class,'addService']);
+    Route::put('/updateService/{id}',[ServiceController::class,'updateService']);
+    Route::delete('/deleteService/{id}',[ServiceController::class,'deleteService']);
 
 });

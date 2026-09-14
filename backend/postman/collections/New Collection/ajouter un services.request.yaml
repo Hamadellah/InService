@@ -1,4 +1,23 @@
 $kind: http-request
-url: ""
-method: GET
+url: http://127.0.0.1:8000/api/addService
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"title\":\"plombier\",\r
+
+    \    \"category_id\":1,\r
+
+    \    \"description\":\"mantenance plombier\",\r
+
+    \    \"price\":\"3000\"\r
+
+    \    \r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: 11|kEllW1ScqxUkmDtqAQQRS9u4JRbBhtCbodOUJRsSac6c9441
 order: 4445746866980090
