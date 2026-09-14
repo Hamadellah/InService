@@ -17,3 +17,14 @@ Route::middleware(['auth:sanctum','technicien'])->group(function(){
     Route::delete('/deleteService/{id}',[ServiceController::class,'deleteService']);
 
 });
+Route::middleware(['auth:sanctum','client'])->group(function(){
+    Route::post('/requestService',[ServiceController::class,'requestService']);
+    Route::get('/myRequests',[ServiceController::class,'myRequests']);
+    Route::put('/updateRequest/{id}',[ServiceController::class,'updateRequest']);
+    Route::delete('/deleteRequest/{id}',[ServiceController::class,'deleteRequest']);
+});
+route::middleware(['auth:sanctum','admin'])->group(function(){
+    Route::get('/allRequests',[ServiceController::class,'allRequests']);
+    Route::put('/updateRequestStatus/{id}',[ServiceController::class,'updateRequestStatus']);
+    Route::delete('/deleteRequestAdmin/{id}',[ServiceController::class,'deleteRequestAdmin']);
+});

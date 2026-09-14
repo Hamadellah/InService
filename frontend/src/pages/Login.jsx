@@ -18,7 +18,13 @@ export default function Login() {
     try {
       const response = await login(email, password);
       console.log("Connexion réussie:", response);
-      navigate("/dashboard");
+      if (response.user.role === "technician") {
+        navigate("/technician/TechnicienDashboard");
+      }else if (response.user.role === "client") {
+        navigate("/client/ClientDashboard");
+      }else if (response.user.role === "admin") {
+        navigate("/admin/AdminDashboard");
+      }
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
       alert("mot de passe ou email incorrect");

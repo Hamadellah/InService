@@ -24,8 +24,29 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
   {
-    path: "/dashboard",
-    element: <Dashboard />,
+    path: "/technician/TechnicienDashboard",
+    element:(
+      <ProtectedRoute role="technician">
+        <TechnicianDashboard />
+      </ProtectedRoute>
+    )
   },
+  {
+    path: "/client/ClientDashboard",
+    element:(
+      <ProtectedRoute role="client">
+        <ClientDashboard />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: "/admin/AdminDashboard",
+    element:(
+      <ProtectedRoute role="admin">
+        <AdminDashboard />
+      </ProtectedRoute>
+    )
+  }
+
 
 ]);
