@@ -85,4 +85,13 @@ INNER JOIN users on users.id = user_id");
             'message' => 'service supprimé avec succés',
         ]);
     }
+    public function showServiceBytechnicien(){
+        $id = auth()->id();
+        $service = Service::where('technicien_id', $id)->get();
+        return response()->json([
+            'status' => 200,
+            'services' => $service
+        ]);
+
+    }
 }
