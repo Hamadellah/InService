@@ -1,4 +1,8 @@
 $kind: http-request
-url: ""
-method: GET
+url: http://127.0.0.1:8000/api/deleteService/1
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: 11|kEllW1ScqxUkmDtqAQQRS9u4JRbBhtCbodOUJRsSac6c9441
 order: 4491002064503407
