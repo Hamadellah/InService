@@ -10,7 +10,7 @@ Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
 Route::delete('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
 Route::put('/profile',[ProfileController::class,'completeProfile'])->middleware('auth:sanctum');
-Route::get('/services',[ServiceController::class,'show']);
+Route::get('/services',[ServiceController::class,'showService']);
 Route::middleware(['auth:sanctum','technicien'])->group(function(){
     Route::post('/addService',[ServiceController::class,'addService']);
     Route::put('/updateService/{id}',[ServiceController::class,'updateService']);

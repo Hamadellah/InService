@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\ServiceService;
 use App\Models\Service;
-
+use Illuminate\Support\Facades\DB;
 class ServiceController extends Controller
 {
     public function __construct(
@@ -16,6 +16,18 @@ class ServiceController extends Controller
     public function show()
     {
         $services = Service::get();
+
+        return response()->json([
+            'status' => 200,
+            'services' => $services
+        ]);
+    }
+    public function showService()
+    {
+        $services = DB::select("select users.name ,users.image , users.phone , techniciens.experience, services.* 
+from services 
+INNER JOIN techniciens on techniciens.id = technicien_id
+INNER JOIN users on users.id = user_id");
 
         return response()->json([
             'status' => 200,
