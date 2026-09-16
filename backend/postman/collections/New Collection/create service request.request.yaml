@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://127.0.0.1:8000/api/makeServiceRequest/4
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"description\":\"hh@gmail.com\",\r
+
+    \    \"scheduled_date\":\"12-12-2004\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: 63|DThnmolRltcJgr463IeSGziSWtOdu4OGGRAaaVqA9984ba87
+order: 4502551529183946

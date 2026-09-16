@@ -22,7 +22,8 @@ Route::middleware(['auth:sanctum','technicien'])->group(function(){
 
 });
 Route::middleware(['auth:sanctum','client'])->group(function(){
-    Route::post('/makeServiceRequest/{id}',[ServiceRequestController::class,'makeServiceRequest']);
+    Route::post('/makeServiceRequest/{serviceId}',[ServiceRequestController::class,'makeServiceRequest']);
+    Route::delete('/deleteServiceRequest/{serviceId}',[ServiceRequestController::class,'deleteServiceRequest']);
    
 });
 route::middleware(['auth:sanctum','admin'])->group(function(){
