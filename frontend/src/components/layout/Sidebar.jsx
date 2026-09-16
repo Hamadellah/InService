@@ -1,32 +1,32 @@
-// f src/components/layout/Sidebar.jsx
 import React from 'react';
+import { NavLink } from 'react-router-dom'; // <--- Zdna NavLink hna
 import { 
   Home, Wrench, Calendar, MessageSquare, Heart, 
   LayoutGrid, Users, ShieldCheck, Star, Clock 
-} from 'lucide-react'; // <--- Beddel FolderGrid b LayoutGrid hna
+} from 'lucide-react';
 
 export default function Sidebar({ isOpen, setIsOpen, role }) {
   
   const navConfig = {
     client: [
-      { name: 'Services', icon: Wrench, href: '/services' },
-      { name: 'Mes Demandes', icon: Calendar, href: '/demandes' },
-      { name: 'Favoris', icon: Heart, href: '/favoris' },
-      { name: 'Messagerie', icon: MessageSquare, href: '/messages' },
+      { name: 'Services', icon: Wrench, to: '/services' },
+      { name: 'Mes Demandes', icon: Calendar, to: '/demandes' },
+      { name: 'Favoris', icon: Heart, to: '/favoris' },
+      { name: 'Messagerie', icon: MessageSquare, to: '/messages' },
     ],
     technicien: [
-      { name: 'Dashboard', icon: Home, href: '/technicien/TechnicienDashboard' },
-      { name: 'Mes Services', icon: Wrench, href: '/technicien/services' },
-      { name: 'Demandes reçues', icon: Calendar, href: '/technicien/demandes' },
-      { name: 'Disponibilités', icon: Clock, href: '/technicien/disponibilites' },
-      { name: 'Messagerie', icon: MessageSquare, href: '/messages' },
+      { name: 'Dashboard', icon: Home, to: '/technicien/TechnicienDashboard' },
+      { name: 'Mes Services', icon: Wrench, to: '/technicien/MesService' },
+      { name: 'Demandes reçues', icon: Calendar, to: '/technicien/demandes' },
+      { name: 'Disponibilités', icon: Clock, to: '/technicien/disponibilites' },
+      { name: 'Messagerie', icon: MessageSquare, to: '/messages' },
     ],
     admin: [
-      { name: 'Dashboard', icon: Home, href: '/admin/AdminDashboard' },
-      { name: 'Utilisateurs', icon: Users, href: '/admin/users' },
-      { name: 'Catégories', icon: LayoutGrid, href: '/admin/categories' }, // <--- Utillisiha hna
-      { name: 'Services', icon: ShieldCheck, href: '/admin/services' },
-      { name: 'Avis & Modération', icon: Star, href: '/admin/avis' },
+      { name: 'Dashboard', icon: Home, to: '/admin/AdminDashboard' },
+      { name: 'Utilisateurs', icon: Users, to: '/admin/users' },
+      { name: 'Catégories', icon: LayoutGrid, to: '/admin/categories' },
+      { name: 'Services', icon: ShieldCheck, to: '/admin/services' },
+      { name: 'Avis & Modération', icon: Star, to: '/admin/avis' },
     ]
   };
 
@@ -56,14 +56,24 @@ export default function Sidebar({ isOpen, setIsOpen, role }) {
           {currentNav.map((item) => {
             const Icon = item.icon;
             return (
-              <a
+              <NavLink
                 key={item.name}
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-cyan-400 transition group"
+                to={item.to}
+                onClick={() => setIsOpen(false)} // Khashha t-sdd Sidebar f Mobile mni t-cliqui 3la lien
+                className={({ isActive }) => `
+                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition group
+                  ${isActive 
+                    ? 'bg-cyan-500/10 text-cyan-400 font-semibold border border-cyan-500/20' 
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-cyan-400'}
+                `}
               >
-                <Icon size={18} className="text-slate-400 group-hover:text-cyan-400 transition" />
-                <span>{item.name}</span>
-              </a>
+                {({ isActive }) => (
+                  <>
+                    <Icon size={18} className={isActive ? "text-cyan-400" : "text-slate-400 group-hover:text-cyan-400 transition"} />
+                    <span>{item.name}</span>
+                  </>
+                )}
+              </NavLink>
             );
           })}
         </div>

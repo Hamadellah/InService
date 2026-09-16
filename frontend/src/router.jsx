@@ -10,7 +10,7 @@ import Layout from "./components/layout/Layout";
 import TechnicienDashboard from "./pages/technicien/TechnicienDashboard";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
+import MesService from "./pages/technicien/MesService";
 export const router = createBrowserRouter([
   // Public Routes (Bla Navbar/Sidebar dyal Dashboard)
   {
@@ -54,6 +54,14 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path:"/technicien/MesService",
+        element: (
+          <ProtectedRoute role="technicien">
+            <MesService />
+          </ProtectedRoute>
+        ),
+      }
     ],
   },
 ]);

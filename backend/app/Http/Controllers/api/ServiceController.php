@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\ServiceService;
 use App\Models\Service;
 use Illuminate\Support\Facades\DB;
+use App\Models\Technicien;
 class ServiceController extends Controller
 {
     public function __construct(
@@ -85,13 +86,24 @@ INNER JOIN users on users.id = user_id");
             'message' => 'service supprimé avec succés',
         ]);
     }
-    public function showServiceBytechnicien(){
-        $id = auth()->id();
-        $service = Service::where('technicien_id', $id)->get();
-        return response()->json([
-            'status' => 200,
-            'services' => $service
-        ]);
+    public function showServiceByTechnicien()
+{
+    $userId = auth()->id();
 
+    $technicien = Technicien::where('user_id', $userId)->first();
+
+    if (!$technicien) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Technicien non trouvé'
+        ], 404);
     }
+
+    $services = Service::where('technicien_id', $technicien->id)->get();
+
+    return response()->json([
+        'status' => 200,
+        'services' => $services
+    ]);
+}
 }

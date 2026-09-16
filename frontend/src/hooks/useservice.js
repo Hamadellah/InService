@@ -4,7 +4,8 @@ import api from "../services/api.js";
 export const useservice = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null); // Zdnaha hna bash ma-thtech
+  const [error, setError] = useState(null);
+  
 
   const fetchServices = async () => {
     setLoading(true);
@@ -55,6 +56,24 @@ export const useservice = () => {
       throw err;
     }
   };
+  const messervices = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get("/servicesTechnicien");
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data?.services || response.data?.data || [];
+      setServices(data);
+      return response.data;
+    } catch (err) {
+      console.error("Erreur lors de la récupération des services du technicien:", err);
+      setError(err.response?.data?.message || "Erreur de chargement");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  return { services, loading, error, fetchServices, addService };
+  return { services, loading, error, fetchServices, addService, messervices };
 };
