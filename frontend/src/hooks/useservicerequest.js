@@ -17,7 +17,7 @@ export const useServiceRequest = () => {
       );
 
       setServiceRequest(response.data);
-      return response.data;
+      return response.data; // Kay-rje3 fih l-data dyal l-demande li t-créat (ykon fih id)
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
@@ -29,14 +29,12 @@ export const useServiceRequest = () => {
     }
   };
 
-  const deleteServiceRequest = async (serviceRequestId) => {
+  const deleteServiceRequest = async (requestId) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.delete(
-        `/deleteServiceRequest/${serviceRequestId}`, // Msa7a7na l-variable name
-      );
-      setServiceRequest(null); // Reset l-state dyal serviceRequest
+      const response = await api.delete(`/deleteServiceRequest/${requestId}`);
+      setServiceRequest(null);
       return response.data;
     } catch (err) {
       const errorMessage =

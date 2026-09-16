@@ -37,8 +37,25 @@ export default function ClientDashboard() {
   });
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // State bāsh n-stokiw les IDs dyal les services li t-siftat lihom demande
-  const [requestedServices, setRequestedServices] = useState([]);
+  // Object key: serviceId -> value: requestId
+  // Initialisation mn localStorage bāsh may-ti3sh l-state f Refresh/Reload!
+  const [requestedServices, setRequestedServices] = useState(() => {
+    try {
+      const saved = localStorage.getItem("client_requested_services");
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  // Sauvegarder f LocalStorage kolma tghayrat requestedServices
+  useEffect(() => {
+    try {
+      localStorage.setItem("client_requested_services", JSON.stringify(requestedServices));
+    } catch (e) {
+      console.error("Erreur de sauvegarde dans localStorage", e);
+    }
+  }, [requestedServices]);
 
   useEffect(() => {
     fetchServices();
@@ -63,10 +80,16 @@ export default function ClientDashboard() {
     e.preventDefault();
 
     try {
-      await makeServiceRequest(selectedServiceId, formData);
+      const response = await makeServiceRequest(selectedServiceId, formData);
+      
+      // Extraction dyal requestId mn response dyal l-backend
+      const requestId = response?.id || response?.data?.id || response?.request?.id || response?.data?.data?.id;
 
-      // Zid serviceId l-array dyal requestedServices
-      setRequestedServices((prev) => [...prev, selectedServiceId]);
+      // Stokiyi mapping: serviceId -> requestId
+      setRequestedServices((prev) => ({
+        ...prev,
+        [selectedServiceId]: requestId || true, // fallback ila marje3sh id
+      }));
 
       // Feedback Success
       setSuccessMessage("Votre demande d'intervention a été envoyée avec succès!");
@@ -82,14 +105,26 @@ export default function ClientDashboard() {
     }
   };
 
-  // Annuler la demande (Delete via API)
+  // Annuler la demande (Delete via API b l-ID dyal Request)
   const handleCancelRequest = async (serviceId) => {
+    const requestId = requestedServices[serviceId];
+
+    if (!requestId) {
+      console.error("ID de demande introuvable pour ce service");
+      return;
+    }
+
     if (window.confirm("Voulez-vous vraiment annuler cette demande ?")) {
       try {
-        await deleteServiceRequest(serviceId);
+        // Sift requestId (aw serviceId) nishane l-API
+        await deleteServiceRequest(requestId);
 
-        // Msaḥ serviceId mn state bāsh t-rja3 l-button l-aṣlha
-        setRequestedServices((prev) => prev.filter((id) => id !== serviceId));
+        // Msaḥ mn local state & localStorage
+        setRequestedServices((prev) => {
+          const updated = { ...prev };
+          delete updated[serviceId];
+          return updated;
+        });
       } catch (err) {
         console.error("Erreur lors de l'annulation:", err);
       }
@@ -161,7 +196,7 @@ export default function ClientDashboard() {
         {!loadingServices && services && services.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => {
-              const isRequested = requestedServices.includes(service.id);
+              const isRequested = Boolean(requestedServices[service.id]);
 
               return (
                 <div
