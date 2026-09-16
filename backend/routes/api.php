@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\api\ProfileController;
 use App\Http\Controllers\api\ServiceController;
+use App\Http\Controllers\api\ServiceRequestController;
 
 
 Route::post('/register',[AuthController::class,'register']);
@@ -21,6 +22,7 @@ Route::middleware(['auth:sanctum','technicien'])->group(function(){
 
 });
 Route::middleware(['auth:sanctum','client'])->group(function(){
+    Route::post('/makeServiceRequest/{id}',[ServiceRequestController::class,'makeServiceRequest']);
    
 });
 route::middleware(['auth:sanctum','admin'])->group(function(){
