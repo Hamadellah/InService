@@ -63,11 +63,27 @@ class ServiceRequestController extends Controller
         ], 404);
     }
 
-    // 3. Suppression
     $serviceRequest->delete();
 
     return response()->json([
         'message' => 'Demande de service supprimée avec succès'
     ], 200);
 }
+public function serviceRequestStatus($id, Request $request)
+{
+   $request->validate([
+    'status' => "required|string"
+   ]);
+   $servicerequest = ServiceRequest::find($id);
+   $servicerequest->update([
+    'status' => $request->status
+   ]);
+   return response()->json([
+    'status' => 200,
+    'message' => 'Status updated successfully',
+    'data' => $servicerequest
+   ]);
+
+
 }
+};

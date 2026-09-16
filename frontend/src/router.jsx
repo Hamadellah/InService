@@ -11,6 +11,7 @@ import TechnicienDashboard from "./pages/technicien/TechnicienDashboard";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import MesService from "./pages/technicien/MesService";
+import Demandes from "./pages/technicien/Demandes";
 export const router = createBrowserRouter([
   // Public Routes (Bla Navbar/Sidebar dyal Dashboard)
   {
@@ -61,6 +62,14 @@ export const router = createBrowserRouter([
             <MesService />
           </ProtectedRoute>
         ),
+      },
+      {
+       path:"/technicien/Demandes",
+       element: (
+         <ProtectedRoute role="technicien">
+           <Demandes />
+         </ProtectedRoute>
+       ),
       }
     ],
   },
