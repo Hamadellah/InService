@@ -1,4 +1,11 @@
 $kind: http-request
-url: ""
+url: http://127.0.0.1:8000/api/serviceRequests
 method: GET
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: 68|N92a3QeO7KjZbtL7fwBJmD35zCZ4glfR3AIeskz5272189dd
 order: 4502840077851209

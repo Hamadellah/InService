@@ -9,8 +9,8 @@ export default function Sidebar({ isOpen, setIsOpen, role }) {
   
   const navConfig = {
     client: [
-      { name: 'Services', icon: Wrench, to: '/services' },
-      { name: 'Mes Demandes', icon: Calendar, to: '/demandes' },
+      { name: 'Services', icon: Wrench, to: '/client/ClientDashboard' },
+      { name: 'Mes Demandes', icon: Calendar, to: '/client/Demandesc' },
       { name: 'Favoris', icon: Heart, to: '/favoris' },
       { name: 'Messagerie', icon: MessageSquare, to: '/messages' },
     ],

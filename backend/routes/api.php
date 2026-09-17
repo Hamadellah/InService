@@ -7,6 +7,7 @@ use App\Http\Controllers\api\ProfileController;
 use App\Http\Controllers\api\ServiceController;
 use App\Http\Controllers\api\ServiceRequestController;
 use App\Http\Controllers\api\TechnicienController;
+use App\Http\Controllers\api\ClientController;
 
 
 Route::post('/register',[AuthController::class,'register']);
@@ -27,6 +28,7 @@ Route::middleware(['auth:sanctum','technicien'])->group(function(){
 Route::middleware(['auth:sanctum','client'])->group(function(){
     Route::post('/makeServiceRequest/{serviceId}',[ServiceRequestController::class,'makeServiceRequest']);
     Route::delete('/deleteServiceRequest/{serviceId}',[ServiceRequestController::class,'deleteServiceRequest']);
+    Route::get('/clientServiceRequests',[ClientController::class,'getServiceRequests']);
    
 });
 route::middleware(['auth:sanctum','admin'])->group(function(){
