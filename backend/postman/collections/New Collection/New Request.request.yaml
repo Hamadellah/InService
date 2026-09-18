@@ -1,0 +1,15 @@
+$kind: http-request
+url: http://127.0.0.1:8000/api/updateServiceRequestStatus/9
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"status\":\"cancelled\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: 71|vz9EjhRmre8hILhXwyxTMrXnMD2jof9yKUC0Cpqsec8dca35
+order: 4503327282849322

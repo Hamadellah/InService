@@ -1,0 +1,8 @@
+$kind: http-request
+url: http://127.0.0.1:8000/api/deleteServiceRequest/10
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: 67|VK6pjlNPMhNj084XeubJ4sMUtyaa9qPfAAblDVEQa9e2f0ff
+order: 4502738812244133
