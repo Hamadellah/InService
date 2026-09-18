@@ -24,6 +24,7 @@ Route::middleware(['auth:sanctum','technicien'])->group(function(){
     route::get('/servicesTechnicien',[ServiceController::class,'showServiceBytechnicien']);
     Route::get('/serviceRequests',[TechnicienController::class,'getserviceRequests']);
     Route::put('/updateServiceRequestStatus/{id}',[ServiceRequestController::class,'serviceRequestStatus']);
+    Route::get('/getMessages',[MessageController::class,'getMessages']);
 
 });
 Route::middleware(['auth:sanctum','client'])->group(function(){

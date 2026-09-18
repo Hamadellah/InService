@@ -17,6 +17,19 @@ export const useMessage = () => {
             setLoading(false);
         }
     };
+    const getMessages = async () => {
+        setLoading(true);
+        try {
+            const response = await api.get('/getMessages');
+            const data = Array.isArray(response.data) ? response.data : response.data?.data || [];
+            setMessages(data);
+            return data;
+        } catch (error) {
+            console.error('Error getting messages:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    return { messages, loading, sendMessage };
+    return { messages, loading, sendMessage, getMessages };
 };

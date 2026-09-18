@@ -8,7 +8,7 @@ use App\Models\Client;
 use App\Models\Message;
 use App\Models\ServiceRequest;
 use App\Models\Technicien;
-
+use Illuminate\Support\Facades\DB;
 class MessageController extends Controller
 {
     public function sendMessage($id,Request $request){
@@ -29,10 +29,11 @@ class MessageController extends Controller
     }
     public function getMessages(){
         $user = auth()->user();
-        $clientId = Client::where('user_id', $user->id)->first();
-        $messages = Message::where('receiver_id', $clientId->id)
-            ->orWhere('sender_id', $clientId->id)
-            ->get();
+        $technicien = Technicien::where('user_id', $user->id)->first();
+        $messages = DB::select('select users.*, messages.* from messages
+INNER JOIN techniciens ON techniciens.id = messages.receiver_id
+INNER JOIN users on users.id = techniciens.user_id
+WHERE techniciens.id = ?', [$technicien->id]);
         return response()->json($messages, 200);
     }
 }

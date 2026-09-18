@@ -1,5 +1,12 @@
 $kind: http-request
 name: New Request
-url: ""
-method: GET
+url: http://127.0.0.1:8000/api/sendMessage/14
+method: POST
+body:
+  type: json
+  content: "{\r\n    \"message\":\"jkk\"\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: 78|zdZR28o33GPRwGa1vw5kFmsQLmkZOo6aoG8xJUW1c1f49e89
 order: 4503591302705243
