@@ -3,6 +3,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
+use App\Models\Technicien;
 use Illuminate\Http\Request;
 use App\Services\ServiceRequestService;
 use App\Models\ServiceRequest;
@@ -75,9 +76,20 @@ public function serviceRequestStatus($id, Request $request)
     'status' => "required|string"
    ]);
    $servicerequest = ServiceRequest::find($id);
+   $technicien = Technicien::find($servicerequest->technicien_id);
    $servicerequest->update([
     'status' => $request->status
    ]);
+   if($request->status === 'in_progress'){
+    $technicien->update([
+        'availability' => false
+    ]);
+   }
+   if($request->status === 'completed'){
+    $technicien->update([
+        'availability' => true
+    ]);
+   }
    return response()->json([
     'status' => 200,
     'message' => 'Status updated successfully',

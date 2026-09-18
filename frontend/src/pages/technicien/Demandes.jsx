@@ -48,7 +48,7 @@ export default function Demandes() {
     }
   };
 
-  // Helper Badge dyal Status m-matchi m3a ENUM Database
+  // Helper Badge dyal Status
   const getStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
       case "pending":
@@ -59,12 +59,6 @@ export default function Demandes() {
           </span>
         );
       case "accepted":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <CheckCircle2 size={13} />
-            Accepté
-          </span>
-        );
       case "in_progress":
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400">
@@ -159,6 +153,7 @@ export default function Demandes() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {serviceRequest.map((request) => {
             const isPending = request.status === "pending";
+            const isInProgress = request.status === "in_progress" || request.status === "accepted";
             const isActionLoading = updatingId === request.id;
 
             return (
@@ -168,7 +163,7 @@ export default function Demandes() {
               >
                 <div className="space-y-4">
                   
-                  {/* Header: ID, Service ID & Status */}
+                  {/* Header */}
                   <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-lg">
@@ -243,11 +238,11 @@ export default function Demandes() {
                 </div>
 
                 <div>
-                  {/* Action Buttons: Kaybano Ghir Mni Katkon Demande "pending" */}
+                  {/* Actions for Pending Status */}
                   {isPending && (
                     <div className="grid grid-cols-2 gap-3 pt-4 mt-4 border-t border-slate-800/80">
                       <button
-                        onClick={() => handleStatusChange(request.id, "accepted")}
+                        onClick={() => handleStatusChange(request.id, "in_progress")}
                         disabled={isActionLoading}
                         className="flex items-center justify-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-semibold py-2 px-3 rounded-xl text-xs transition active:scale-95 disabled:opacity-50"
                       >
@@ -262,6 +257,20 @@ export default function Demandes() {
                       >
                         {isActionLoading ? <RefreshCw size={14} className="animate-spin" /> : <X size={14} />}
                         <span>Refuser</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Action for In Progress Status */}
+                  {isInProgress && (
+                    <div className="pt-4 mt-4 border-t border-slate-800/80">
+                      <button
+                        onClick={() => handleStatusChange(request.id, "completed")}
+                        disabled={isActionLoading}
+                        className="w-full flex items-center justify-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 font-semibold py-2.5 px-4 rounded-xl text-xs transition active:scale-95 disabled:opacity-50"
+                      >
+                        {isActionLoading ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={15} />}
+                        <span>Marquer le service comme terminé</span>
                       </button>
                     </div>
                   )}

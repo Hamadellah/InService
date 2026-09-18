@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Client;
 use App\Models\Service;
 use App\Models\ServiceRequest;
+use App\Models\Technicien;
 
 class ServiceRequestService
 {
@@ -21,6 +22,13 @@ class ServiceRequestService
         if (!$service) {
             return ['error' => "Le service demandé n'existe pas.", 'code' => 404];
         }
+        $technicien=Technicien::find($service->technicien_id);
+        if(!$technicien){
+            return ['error' => "Le technicien associé à ce service n'existe pas.", 'code' => 404];
+        }
+        if(isset($technicien->availability) && $technicien->availability === false){
+            return ['error' => "Le technicien associé à ce service n'est pas disponible pour le moment.", 'code' => 400];
+        }
 
 
         $serviceRequest = ServiceRequest::create([
@@ -32,6 +40,7 @@ class ServiceRequestService
             'scheduled_date' => $data['scheduled_date'],
             'status'         => 'pending',
         ]);
+        
 
         return ['data' => $serviceRequest, 'code' => 201];
     }

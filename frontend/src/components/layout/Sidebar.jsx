@@ -19,7 +19,7 @@ export default function Sidebar({ isOpen, setIsOpen, role }) {
       { name: 'Mes Services', icon: Wrench, to: '/technicien/MesService' },
       { name: 'Demandes reçues', icon: Calendar, to: '/technicien/demandes' },
       { name: 'Disponibilités', icon: Clock, to: '/technicien/disponibilites' },
-      { name: 'Messagerie', icon: MessageSquare, to: '/messages' },
+      { name: 'Messagerie', icon: MessageSquare, to: '/technicien/MessageTechnicien' },
     ],
     admin: [
       { name: 'Dashboard', icon: Home, to: '/admin/AdminDashboard' },

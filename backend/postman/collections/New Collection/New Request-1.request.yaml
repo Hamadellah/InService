@@ -1,5 +1,12 @@
 $kind: http-request
 name: New Request
-url: ""
+url: http://127.0.0.1:8000/api/clientServiceRequests
 method: GET
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: 73|zSWVyzVzML5b4bkUVyDsbjcXqlHise9an5RIsI7ge0b50f07
 order: 4503585634133964
