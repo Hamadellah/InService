@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useMessage } from '../../hooks/usemessage';
 import { 
-  MessageSquare, User, Send, Loader2, Search, ArrowLeft, CheckCircle2 
+  MessageSquare, User, Send, Loader2, Search, ArrowLeft 
 } from 'lucide-react';
 
-export default function MessengerTechnicien() {
-  const { messages, loading, sendMessage, getMessages } = useMessage();
+export default function MessageTechnicien() {
+  // Extraction d-postMessages mn l-hook dyalak
+  const { messages, loading, postMessages, getMessages } = useMessage();
   
-  // State l-contact li sélectionné (Conversation active)
   const [selectedUser, setSelectedUser] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    getMessages();
+    if (getMessages) {
+      getMessages();
+    }
   }, []);
 
   const messagesList = Array.isArray(messages) ? messages : [];
 
-  // Groupement d-les messages b-l-utilisateur (Group by Sender)
+  // Groupement d-les messages par client (Sender)
   const conversations = messagesList.reduce((acc, msg) => {
     const userId = msg.sender_id || msg.user_id || msg.id;
     if (!acc[userId]) {
@@ -40,24 +42,34 @@ export default function MessengerTechnicien() {
     c.userName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Send message f-l-conversation
+  // Envoi d-message mni kat-clicki 3la Send
   const handleSend = async (e) => {
     e.preventDefault();
     if (!replyText.trim() || !selectedUser) return;
 
     setIsSending(true);
     try {
-      await sendMessage(selectedUser.userId, { message: replyText });
-      setReplyText("");
-      getMessages(); // Rafraîchir les messages
+      // Appele l-hook postMessages(id, messageData)
+      const res = await postMessages(selectedUser.userId, { message: replyText });
+      
+      if (res) {
+        // Ajout d-message f-la liste locale bach i-afficha f-l-bka blabladi
+        selectedUser.messagesList.push({
+          id: res.id || Date.now(),
+          message: replyText,
+          sender_id: 'me',
+          created_at: new Date().toISOString()
+        });
+        setReplyText("");
+      }
     } catch (err) {
-      console.error("Erreur envoi:", err);
+      console.error("Erreur d'envoi du message:", err);
     } finally {
       setIsSending(false);
     }
   };
 
-  if (loading) {
+  if (loading && messagesList.length === 0) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-slate-400 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
@@ -70,16 +82,13 @@ export default function MessengerTechnicien() {
     <div className="p-2 sm:p-6 max-w-7xl mx-auto">
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur-xl h-[80vh] flex overflow-hidden shadow-2xl">
         
-        {/* ================= SIDEBAR (List d-les personnes) ================= */}
+        {/* Sidebar: Liste d-les clients */}
         <div className={`w-full md:w-80 lg:w-96 border-r border-slate-800 flex flex-col ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
-          
-          {/* Header Sidebar */}
           <div className="p-4 border-b border-slate-800 space-y-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <MessageSquare className="text-cyan-400" size={22} />
               Messages
             </h2>
-            {/* Search Input */}
             <div className="relative">
               <Search className="absolute left-3 top-2.5 text-slate-500" size={16} />
               <input
@@ -92,11 +101,10 @@ export default function MessengerTechnicien() {
             </div>
           </div>
 
-          {/* Conversations List */}
           <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
             {usersList.length === 0 ? (
               <div className="p-6 text-center text-slate-500 text-xs">
-                Aucune conversation trouvée.
+                Aucun message trouvé.
               </div>
             ) : (
               usersList.map((chat) => {
@@ -134,11 +142,11 @@ export default function MessengerTechnicien() {
           </div>
         </div>
 
-        {/* ================= CHAT WINDOW (Zone d-conversation) ================= */}
+        {/* Zone Chat Window */}
         <div className={`flex-1 flex flex-col ${!selectedUser ? 'hidden md:flex' : 'flex'}`}>
           {selectedUser ? (
             <>
-              {/* Chat Header */}
+              {/* Header Chat */}
               <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button 
@@ -156,33 +164,43 @@ export default function MessengerTechnicien() {
                   )}
                   <div>
                     <h3 className="font-semibold text-white text-sm">{selectedUser.userName}</h3>
-                    <p className="text-[11px] text-cyan-400">En ligne</p>
+                    <p className="text-[11px] text-cyan-400">Discussion active</p>
                   </div>
                 </div>
               </div>
 
-              {/* Messages Body */}
+              {/* Discussion Body */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-950/20">
-                {selectedUser.messagesList.map((m, idx) => (
-                  <div key={idx} className="flex flex-col items-start space-y-1">
-                    <div className="max-w-[75%] bg-slate-800/90 text-slate-200 border border-slate-700/60 p-3 rounded-2xl rounded-tl-none text-xs sm:text-sm">
-                      {m.message}
+                {selectedUser.messagesList.map((m, idx) => {
+                  const isMe = m.sender_id === 'me';
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`flex flex-col space-y-1 ${isMe ? 'items-end' : 'items-start'}`}
+                    >
+                      <div className={`max-w-[75%] p-3 rounded-2xl text-xs sm:text-sm ${
+                        isMe 
+                          ? 'bg-cyan-600 text-white rounded-tr-none' 
+                          : 'bg-slate-800/90 text-slate-200 border border-slate-700/60 rounded-tl-none'
+                      }`}>
+                        {m.message}
+                      </div>
+                      <span className="text-[10px] text-slate-500 px-1">
+                        {m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-slate-500 px-1">
-                      {m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
-              {/* Chat Input Form */}
+              {/* Formulaire d-l-envoi */}
               <form onSubmit={handleSend} className="p-3 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2">
                 <input
                   type="text"
                   required
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Écrivez votre message..."
+                  placeholder="Écrivez votre réponse..."
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
                 />
                 <button
@@ -195,12 +213,11 @@ export default function MessengerTechnicien() {
               </form>
             </>
           ) : (
-            /* Placeholder mni ma-koun sélectionné ḥta utilisateur */
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500 space-y-3">
               <div className="p-4 bg-slate-800/40 rounded-full border border-slate-800 text-cyan-400">
                 <MessageSquare size={32} />
               </div>
-              <p className="text-sm">Sélectionnez une conversation pour commencer à discuter.</p>
+              <p className="text-sm">Sélectionnez un client pour voir la conversation.</p>
             </div>
           )}
         </div>
