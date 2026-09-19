@@ -17,18 +17,16 @@ import {
 } from "lucide-react";
 
 export default function ClientDashboard() {
-  // Hook dyal Fetching services
   const { services, loading: loadingServices, fetchServices } = useservice();
 
-  // Hook dyal Managing service requests
   const { 
     makeServiceRequest, 
     deleteServiceRequest, 
+    getMyRequests, // Function bāsh njībū les demandes d l-client mn Backend
     loading: submitting, 
     error: apiError 
   } = useServiceRequest();
 
-  // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [formData, setFormData] = useState({
@@ -37,31 +35,38 @@ export default function ClientDashboard() {
   });
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // Object key: serviceId -> value: requestId
-  // Initialisation mn localStorage bāsh may-ti3sh l-state f Refresh/Reload!
-  const [requestedServices, setRequestedServices] = useState(() => {
-    try {
-      const saved = localStorage.getItem("client_requested_services");
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      return {};
-    }
-  });
+  // Object mapping: serviceId -> requestId (State d React bla localStorage)
+  const [requestedServices, setRequestedServices] = useState({});
 
-  // Sauvegarder f LocalStorage kolma tghayrat requestedServices
-  useEffect(() => {
+  // 1. Fetching dyal Services & My Requests mn l-Backend f-degga waḥda
+  const loadDashboardData = async () => {
     try {
-      localStorage.setItem("client_requested_services", JSON.stringify(requestedServices));
-    } catch (e) {
-      console.error("Erreur de sauvegarde dans localStorage", e);
+      await fetchServices();
+      
+      // Njībū les demandes dyal l-client l-mconnecti mn l-Backend
+      if (getMyRequests) {
+        const res = await getMyRequests();
+        const userRequests = Array.isArray(res) ? res : res?.data || [];
+        
+        // N-ḥawlū les demandes l-object: { service_id: request_id }
+        const requestsMap = {};
+        userRequests.forEach((req) => {
+          const serviceId = req.service_id || req.service?.id;
+          if (serviceId) {
+            requestsMap[serviceId] = req.id;
+          }
+        });
+        setRequestedServices(requestsMap);
+      }
+    } catch (err) {
+      console.error("Erreur lors du chargement des données:", err);
     }
-  }, [requestedServices]);
+  };
 
   useEffect(() => {
-    fetchServices();
+    loadDashboardData();
   }, []);
 
-  // Fath L-Modal
   const handleOpenModal = (serviceId) => {
     setSelectedServiceId(serviceId);
     setFormData({ description: "", scheduled_date: "" });
@@ -69,7 +74,6 @@ export default function ClientDashboard() {
     setIsModalOpen(true);
   };
 
-  // Fermer L-Modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedServiceId(null);
@@ -82,19 +86,16 @@ export default function ClientDashboard() {
     try {
       const response = await makeServiceRequest(selectedServiceId, formData);
       
-      // Extraction dyal requestId mn response dyal l-backend
-      const requestId = response?.id || response?.data?.id || response?.request?.id || response?.data?.data?.id;
+      const requestId = response?.id || response?.data?.id || response?.request?.id;
 
-      // Stokiyi mapping: serviceId -> requestId
+      // N-mājīw l-state b-demande l-jdīda
       setRequestedServices((prev) => ({
         ...prev,
-        [selectedServiceId]: requestId || true, // fallback ila marje3sh id
+        [selectedServiceId]: requestId || true,
       }));
 
-      // Feedback Success
       setSuccessMessage("Votre demande d'intervention a été envoyée avec succès!");
 
-      // Shadd l-modal mn ba3d 1.2s
       setTimeout(() => {
         handleCloseModal();
         setSuccessMessage(null);
@@ -105,7 +106,7 @@ export default function ClientDashboard() {
     }
   };
 
-  // Annuler la demande (Delete via API b l-ID dyal Request)
+  // Annuler la demande via Backend
   const handleCancelRequest = async (serviceId) => {
     const requestId = requestedServices[serviceId];
 
@@ -116,10 +117,9 @@ export default function ClientDashboard() {
 
     if (window.confirm("Voulez-vous vraiment annuler cette demande ?")) {
       try {
-        // Sift requestId (aw serviceId) nishane l-API
         await deleteServiceRequest(requestId);
 
-        // Msaḥ mn local state & localStorage
+        // N-msḥū l-service mn state dyal React
         setRequestedServices((prev) => {
           const updated = { ...prev };
           delete updated[serviceId];
@@ -133,7 +133,7 @@ export default function ClientDashboard() {
 
   return (
     <div className="space-y-8 relative">
-      {/* ==================== HEADER SECTION ==================== */}
+      {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
@@ -145,7 +145,7 @@ export default function ClientDashboard() {
         </div>
 
         <button
-          onClick={fetchServices}
+          onClick={loadDashboardData}
           disabled={loadingServices}
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-sm font-medium transition active:scale-95 disabled:opacity-50"
         >
@@ -154,14 +154,13 @@ export default function ClientDashboard() {
         </button>
       </div>
 
-      {/* ==================== SERVICES SECTION ==================== */}
+      {/* SERVICES SECTION */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Wrench className="text-cyan-400" size={20} />
           <h2 className="text-lg font-semibold text-slate-200">Services disponibles</h2>
         </div>
 
-        {/* LOADING STATE (Skeleton) */}
         {loadingServices && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
@@ -183,7 +182,6 @@ export default function ClientDashboard() {
           </div>
         )}
 
-        {/* EMPTY STATE */}
         {!loadingServices && services && services.length === 0 && (
           <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md">
             <AlertCircle size={40} className="mx-auto text-slate-500 mb-3" />
@@ -192,7 +190,6 @@ export default function ClientDashboard() {
           </div>
         )}
 
-        {/* SERVICES CARDS GRID */}
         {!loadingServices && services && services.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => {
@@ -204,7 +201,6 @@ export default function ClientDashboard() {
                   className="group relative flex flex-col justify-between rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 backdrop-blur-md hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300"
                 >
                   <div>
-                    {/* Technicien Info */}
                     <div className="flex items-center gap-3.5 mb-4">
                       <div className="relative">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg overflow-hidden">
@@ -242,7 +238,6 @@ export default function ClientDashboard() {
                       </div>
                     </div>
 
-                    {/* Service Title & Description */}
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-full">
@@ -258,7 +253,6 @@ export default function ClientDashboard() {
                     </div>
                   </div>
 
-                  {/* Price & Dynamic Action Button */}
                   <div className="pt-4 border-t border-slate-800/80 space-y-4">
                     <div className="flex items-baseline justify-between">
                       <span className="text-xs text-slate-400">Tarif estimé</span>
@@ -270,7 +264,6 @@ export default function ClientDashboard() {
                       </div>
                     </div>
 
-                    {/* Dynamic Button: Demander OU Annuler */}
                     {isRequested ? (
                       <button
                         onClick={() => handleCancelRequest(service.id)}
@@ -298,12 +291,11 @@ export default function ClientDashboard() {
         )}
       </div>
 
-      {/* ==================== MODAL FORM DEMANDE ==================== */}
+      {/* MODAL FORM DEMANDE */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl relative space-y-5">
             
-            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Send size={18} className="text-cyan-400" />
@@ -318,7 +310,6 @@ export default function ClientDashboard() {
               </button>
             </div>
 
-            {/* API Error Alert */}
             {apiError && (
               <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0" />
@@ -326,7 +317,6 @@ export default function ClientDashboard() {
               </div>
             )}
 
-            {/* Success Message Alert */}
             {successMessage && (
               <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
                 <CheckCircle2 size={16} className="shrink-0" />
@@ -334,10 +324,7 @@ export default function ClientDashboard() {
               </div>
             )}
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              
-              {/* Description Input */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
                   <FileText size={14} className="text-cyan-400" />
@@ -354,7 +341,6 @@ export default function ClientDashboard() {
                 />
               </div>
 
-              {/* Date Input */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
                   <Calendar size={14} className="text-cyan-400" />
@@ -370,7 +356,6 @@ export default function ClientDashboard() {
                 />
               </div>
 
-              {/* Modal Actions */}
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
                 <button
                   type="button"
@@ -389,7 +374,6 @@ export default function ClientDashboard() {
                   <span>{submitting ? "Envoi en cours..." : "Confirmer la demande"}</span>
                 </button>
               </div>
-
             </form>
 
           </div>

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function TechnicienDashboard() {
-  const { services, loading, fetchServices, addService } = useservice();
+  const { services, loading, fetchServices, addService,messervices } = useservice();
   const { categories, loading: categoriesLoading, fetchCategories } = usecategory();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -30,7 +30,7 @@ export default function TechnicienDashboard() {
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
-    fetchServices();
+    messervices();
     fetchCategories();
   }, []);
 
@@ -77,7 +77,7 @@ export default function TechnicienDashboard() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={fetchServices}
+            onClick={messervices}
             disabled={loading}
             className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition active:scale-95 disabled:opacity-50"
             title="Actualiser"

@@ -30,10 +30,10 @@ class MessageController extends Controller
     public function getMessages(){
         $user = auth()->user();
         $technicien = Technicien::where('user_id', $user->id)->first();
-        $messages = DB::select('select users.*, messages.* from messages
-INNER JOIN techniciens ON techniciens.id = messages.receiver_id
-INNER JOIN users on users.id = techniciens.user_id
-WHERE techniciens.id = ?', [$technicien->id]);
+        $messages =DB::select('SELECT messages.* , users.name,users.image from messages
+INNER JOIN clients on messages.sender_id=clients.id
+INNER JOIN users on clients.user_id = users.id
+WHERE messages.receiver_id=? OR messages.sender_id=? ORDER BY messages.created_at DESC', [$technicien->id,$technicien->id]);
         return response()->json($messages, 200);
     }
     public function postMessages($id,Request $request){

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, Bell, ChevronDown, LogOut, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Navbar({ toggleSidebar, isSidebarOpen, user, logout }) {
   const [profileDropdown, setProfileDropdown] = useState(false);
@@ -18,14 +19,14 @@ export default function Navbar({ toggleSidebar, isSidebarOpen, user, logout }) {
             {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          <a href="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-500/20">
               iS
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">
               InService
             </span>
-          </a>
+          </Link>
         </div>
 
         {/* Right: Notifications & Profile */}
@@ -72,9 +73,16 @@ export default function Navbar({ toggleSidebar, isSidebarOpen, user, logout }) {
                   <p className="text-xs font-semibold text-slate-200">{user?.name}</p>
                   <p className="text-[11px] text-cyan-400 capitalize">{user?.role}</p>
                 </div>
-                <a href="/profile" className="flex items-center gap-2 px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 transition">
+                
+                {/* Bddelna <a> b <Link> hna */}
+                <Link 
+                  to="/profile" 
+                  onClick={() => setProfileDropdown(false)}
+                  className="flex items-center gap-2 px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 transition"
+                >
                   <User size={14} /> Profil
-                </a>
+                </Link>
+
                 <button 
                   onClick={logout}
                   className="w-full flex items-center gap-2 px-4 py-2 text-xs text-rose-400 hover:bg-slate-800 transition"

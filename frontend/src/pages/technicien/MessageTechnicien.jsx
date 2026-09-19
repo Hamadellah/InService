@@ -5,7 +5,6 @@ import {
 } from 'lucide-react';
 
 export default function MessageTechnicien() {
-  // Extraction d-postMessages mn l-hook dyalak
   const { messages, loading, postMessages, getMessages } = useMessage();
   
   const [selectedUser, setSelectedUser] = useState(null);
@@ -21,20 +20,27 @@ export default function MessageTechnicien() {
 
   const messagesList = Array.isArray(messages) ? messages : [];
 
-  // Groupement d-les messages par client (Sender)
+  // Groupement d-les messages par L'AUTRE UTILISATEUR (Client)
   const conversations = messagesList.reduce((acc, msg) => {
-    const userId = msg.sender_id || msg.user_id || msg.id;
-    if (!acc[userId]) {
-      acc[userId] = {
-        userId: userId,
-        userName: msg.sender_name || msg.user_name || msg.name || "Client",
-        userImage: msg.sender_image || msg.user_image || msg.image,
+    // 1. تحديد الـ ID ديال الكليان (الطرف الآخر)
+    const partnerId = msg.other_user_id || (msg.sender_id === msg.client_user_id ? msg.sender_id : msg.receiver_id) || msg.sender_id;
+
+    if (!acc[partnerId]) {
+      acc[partnerId] = {
+        userId: partnerId,
+        userName: msg.name || msg.sender_name || msg.user_name || "Client",
+        userImage: msg.image || msg.sender_image || msg.user_image,
         lastMessage: msg.message,
         lastTime: msg.created_at,
         messagesList: []
       };
     }
-    acc[userId].messagesList.push(msg);
+    
+    // تحديث أخر ميساج
+    acc[partnerId].lastMessage = msg.message;
+    acc[partnerId].lastTime = msg.created_at;
+    acc[partnerId].messagesList.push(msg);
+    
     return acc;
   }, {});
 
@@ -42,24 +48,27 @@ export default function MessageTechnicien() {
     c.userName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Envoi d-message mni kat-clicki 3la Send
   const handleSend = async (e) => {
     e.preventDefault();
     if (!replyText.trim() || !selectedUser) return;
 
     setIsSending(true);
     try {
-      // Appele l-hook postMessages(id, messageData)
       const res = await postMessages(selectedUser.userId, { message: replyText });
       
       if (res) {
-        // Ajout d-message f-la liste locale bach i-afficha f-l-bka blabladi
-        selectedUser.messagesList.push({
+        // إضافة الميساج الجديد مباشرة للمحادثة الحالية
+        const newMessage = {
           id: res.id || Date.now(),
           message: replyText,
           sender_id: 'me',
           created_at: new Date().toISOString()
-        });
+        };
+        
+        selectedUser.messagesList.push(newMessage);
+        selectedUser.lastMessage = replyText;
+        selectedUser.lastTime = newMessage.created_at;
+        
         setReplyText("");
       }
     } catch (err) {
@@ -82,7 +91,7 @@ export default function MessageTechnicien() {
     <div className="p-2 sm:p-6 max-w-7xl mx-auto">
       <div className="bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur-xl h-[80vh] flex overflow-hidden shadow-2xl">
         
-        {/* Sidebar: Liste d-les clients */}
+        {/* Sidebar */}
         <div className={`w-full md:w-80 lg:w-96 border-r border-slate-800 flex flex-col ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-4 border-b border-slate-800 space-y-3">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -142,7 +151,7 @@ export default function MessageTechnicien() {
           </div>
         </div>
 
-        {/* Zone Chat Window */}
+        {/* Chat Window */}
         <div className={`flex-1 flex flex-col ${!selectedUser ? 'hidden md:flex' : 'flex'}`}>
           {selectedUser ? (
             <>
@@ -172,7 +181,8 @@ export default function MessageTechnicien() {
               {/* Discussion Body */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-950/20">
                 {selectedUser.messagesList.map((m, idx) => {
-                  const isMe = m.sender_id === 'me';
+                  // التمييز بين الميساج المصيفت والمستقبل
+                  const isMe = m.sender_id === 'me' || m.sender_id !== selectedUser.userId;
                   return (
                     <div 
                       key={idx} 
@@ -193,7 +203,7 @@ export default function MessageTechnicien() {
                 })}
               </div>
 
-              {/* Formulaire d-l-envoi */}
+              {/* Input Form */}
               <form onSubmit={handleSend} className="p-3 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2">
                 <input
                   type="text"

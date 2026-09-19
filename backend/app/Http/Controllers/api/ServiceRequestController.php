@@ -18,25 +18,21 @@ class ServiceRequestController extends Controller
         $this->service = $service;
     }
 
-    public function makeServiceRequest($serviceId, Request $request)
-    {
- 
-        $request->validate([
-            'description'    => 'required|string',
-            'scheduled_date' => 'required|date',
-        ]);
+   public function makeServiceRequest($serviceId, Request $request)
+{
+    $request->validate([
+        'description'    => 'required|string',
+        'scheduled_date' => 'required|date',
+    ]);
 
-        $result = $this->service->createRequest($serviceId, $request->all(), auth()->user());
+    $result = $this->service->createRequest($serviceId, $request->all(), auth()->user());
 
-
-
-
-        return response()->json([
-            'status'  => 201,
-            'message' => 'Demande créée avec succès',
-            'data'    => $result['data']
-        ], 201);
-    }
+    return response()->json([
+        'status'  => 201,
+        'message' => 'Demande créée avec succès',
+        'data'    => $result 
+    ], 201);
+}
    public function deleteServiceRequest($id)
 {
     $user = auth()->user();
