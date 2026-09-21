@@ -18,7 +18,7 @@ class ServiceRequestController extends Controller
         $this->service = $service;
     }
 
-   public function makeServiceRequest($serviceId, Request $request)
+  public function makeServiceRequest($serviceId, Request $request)
 {
     $request->validate([
         'description'    => 'required|string',
@@ -27,17 +27,22 @@ class ServiceRequestController extends Controller
 
     $result = $this->service->createRequest($serviceId, $request->all(), auth()->user());
 
+    if (isset($result['error'])) {
+        return response()->json([
+            'status'  => $result['code'],
+            'message' => $result['error']
+        ], $result['code']);
+    }
+
     return response()->json([
         'status'  => 201,
         'message' => 'Demande créée avec succès',
-        'data'    => $result 
+        'data'    => $result['data'] // Arje3 $result['data'] f blast $result kaml
     ], 201);
 }
    public function deleteServiceRequest($id)
 {
-    $user = auth()->user();
-
-    // 1. N-jibo l-client w-n-vérifiw wash kayn
+    $user = auth()->user();  
     $client = Client::where('user_id', $user->id)->first();
 
     if (!$client) {
@@ -46,7 +51,7 @@ class ServiceRequestController extends Controller
         ], 404);
     }
 
-    // 2. N-qellbo 3la l-demande b-l-ID dyal l-demande NISHAN (ou b-l-service_id)
+
     $serviceRequest = ServiceRequest::where('client_id', $client->id)
         ->where(function ($query) use ($id) {
             $query->where('id', $id)

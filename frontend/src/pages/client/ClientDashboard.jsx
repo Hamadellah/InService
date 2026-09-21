@@ -25,10 +25,11 @@ export default function ClientDashboard() {
   const { services, loading: loadingServices, fetchServices } = useservice();
   const { categories, loading: loadingCategories, fetchCategories } = usecategory();
 
+  // Maqaa getclientdemande jedhamu getMyRequests bakka fayyadamna
   const { 
     makeServiceRequest, 
     deleteServiceRequest, 
-    getMyRequests, 
+    getclientdemande, 
     loading: submitting, 
     error: apiError 
   } = useServiceRequest();
@@ -49,11 +50,9 @@ export default function ClientDashboard() {
   });
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // States pour le filtrage et la recherche
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // State local des demandes de service
   const [requestedServices, setRequestedServices] = useState({});
 
   const loadDashboardData = async () => {
@@ -63,15 +62,16 @@ export default function ClientDashboard() {
         fetchCategories()
       ]);
       
-      if (getMyRequests) {
-        const res = await getMyRequests();
+      // Asirratti getclientdemande fayyadamna
+      if (getclientdemande) {
+        const res = await getclientdemande();
         const userRequests = Array.isArray(res) ? res : res?.data || [];
         
         const requestsMap = {};
         userRequests.forEach((req) => {
           const serviceId = req.service_id || req.service?.id;
           if (serviceId) {
-            requestsMap[serviceId] = req.id;
+            requestsMap[serviceId] = req.id; // Request ID kuufna
           }
         });
         setRequestedServices(requestsMap);
@@ -84,11 +84,7 @@ export default function ClientDashboard() {
   useEffect(() => {
     loadDashboardData();
   }, []);
-  useEffect(() => {
-    console.log("services:", services);
-  }, [services]);
 
-  // Filtrage combiné par Catégorie et Nom du Service
   const rawServices = Array.isArray(services) ? services : services?.data || [];
   
   const filteredServices = rawServices.filter((service) => {
@@ -122,15 +118,11 @@ export default function ClientDashboard() {
     e.preventDefault();
 
     try {
-      const response = await makeServiceRequest(selectedServiceId, formData);
-      const requestId = response?.id || response?.data?.id || response?.request?.id;
-
-      setRequestedServices((prev) => ({
-        ...prev,
-        [selectedServiceId]: requestId || true,
-      }));
-
+      await makeServiceRequest(selectedServiceId, formData);
       setSuccessMessage("Votre demande d'intervention a été envoyée avec succès!");
+
+      // Data deebisnee fe'uun ID ajaja haaraa arganna
+      await loadDashboardData();
 
       setTimeout(() => {
         handleCloseModal();
@@ -164,7 +156,6 @@ export default function ClientDashboard() {
       }
     }
   };
- 
 
   return (
     <div className="space-y-8 relative">
@@ -206,7 +197,6 @@ export default function ClientDashboard() {
 
       {/* SEARCH BAR & CATEGORIES SECTION */}
       <div className="space-y-4">
-        {/* BARRE DE RECHERCHE */}
         <div className="relative max-w-md">
           <Search className="absolute left-3.5 top-3 text-slate-500" size={18} />
           <input
@@ -218,13 +208,12 @@ export default function ClientDashboard() {
           />
         </div>
 
-        {/* LISTE DES CATÉGORIES (BOUTONS DE FILTRE) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 scrollbar-thin max-w-full">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 border ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border ${
               selectedCategory === null
-                ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold"
+                ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold shadow-lg shadow-cyan-500/20"
                 : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800"
             }`}
           >
@@ -238,9 +227,9 @@ export default function ClientDashboard() {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 border ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border ${
                   isSelected
-                    ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold"
+                    ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold shadow-lg shadow-cyan-500/20"
                     : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800"
                 }`}
               >
@@ -350,7 +339,6 @@ export default function ClientDashboard() {
                         </div>
                       </div>
 
-                      {/* FAVORITE BUTTON */}
                       <button
                         type="button"
                         disabled={loadingFav}

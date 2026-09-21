@@ -12,7 +12,6 @@ export default function Sidebar({ isOpen, setIsOpen, role }) {
       { name: 'Services', icon: Wrench, to: '/client/ClientDashboard' },
       { name: 'Mes Demandes', icon: Calendar, to: '/client/Demandesc' },
       { name: 'Favoris', icon: Heart, to: '/client/Favorites' },
-      { name: 'Messagerie', icon: MessageSquare, to: '/client/ClientMessage' },
     ],
     technicien: [
       { name: 'Dashboard', icon: Home, to: '/technicien/TechnicienDashboard' },

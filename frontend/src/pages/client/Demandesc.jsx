@@ -4,11 +4,12 @@ import { useMessage } from "../../hooks/usemessage"; // Import dyal l-hook dyal 
 import { 
   Calendar, Clock, Mail, Phone, MapPin, 
   User, AlertCircle, Loader2, CheckCircle2, XCircle, PlayCircle, MessageSquare,
-  X, Send
+  X, Send, Trash2
 } from "lucide-react";
 
 export default function Demandesc() {
-  const { getclientdemande, demandes, loading: loadingDemandes } = useServiceRequest();
+  // Zdna cancelDemande (wla deleteDemande) mn useServiceRequest
+  const { getclientdemande, demandes, loading: loadingDemandes, cancelDemande } = useServiceRequest();
   const { sendMessage, loading: sendingMessage } = useMessage();
 
   // State l-modal dyal contact
@@ -16,6 +17,9 @@ export default function Demandesc() {
   const [messageContent, setMessageContent] = useState("");
   const [sendSuccess, setSendSuccess] = useState(false);
   const [sendError, setSendError] = useState("");
+
+  // State l-loading dyal annuler demande
+  const [cancelingId, setCancelingId] = useState(null);
 
   useEffect(() => {
     getclientdemande();
@@ -43,7 +47,6 @@ export default function Demandesc() {
 
     setSendError("");
     try {
-      // Calling sendMessage(id, { message }) mn l-hook dyal Message
       const res = await sendMessage(selectedTechnician.id, { 
         message: messageContent 
       });
@@ -59,6 +62,24 @@ export default function Demandesc() {
     } catch (err) {
       console.error("Erreur envoi message:", err);
       setSendError("Impossible d'envoyer le message. Veuillez réessayer.");
+    }
+  };
+
+  // Fonction dyal l-annulation
+  const handleCancelDemande = async (id) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir annuler cette demande ?")) return;
+
+    setCancelingId(id);
+    try {
+      if (cancelDemande) {
+        await cancelDemande(id);
+        // Re-fetch des demandes
+        getclientdemande();
+      }
+    } catch (err) {
+      console.error("Erreur lors de l'annulation:", err);
+    } finally {
+      setCancelingId(null);
     }
   };
 
@@ -137,6 +158,9 @@ export default function Demandesc() {
           {demandesList.map((item) => {
             const statusLower = item.status?.toLowerCase();
             const isInProgress = statusLower === "in_progress" || statusLower === "in-progress" || statusLower === "accepted" || statusLower === "accepté";
+            
+            // Check ila kanet la demande en attente
+            const isPending = !statusLower || statusLower === "pending" || statusLower === "en_attente" || statusLower === "en attente";
 
             return (
               <div
@@ -205,6 +229,24 @@ export default function Demandesc() {
                       >
                         <MessageSquare size={15} />
                         <span>Contacter le technicien</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Action Annuler Button (si en attente) */}
+                  {isPending && (
+                    <div className="mb-3 pt-2">
+                      <button
+                        onClick={() => handleCancelDemande(item.id)}
+                        disabled={cancelingId === item.id}
+                        className="w-full flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 hover:text-rose-300 font-medium py-2.5 px-4 rounded-xl text-xs transition-all duration-200 active:scale-95 shadow-md shadow-rose-500/5 disabled:opacity-50"
+                      >
+                        {cancelingId === item.id ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={15} />
+                        )}
+                        <span>Annuler la demande</span>
                       </button>
                     </div>
                   )}
