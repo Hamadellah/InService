@@ -25,7 +25,6 @@ export default function ClientDashboard() {
   const { services, loading: loadingServices, fetchServices } = useservice();
   const { categories, loading: loadingCategories, fetchCategories } = usecategory();
 
-  // Maqaa getclientdemande jedhamu getMyRequests bakka fayyadamna
   const { 
     makeServiceRequest, 
     deleteServiceRequest, 
@@ -62,7 +61,6 @@ export default function ClientDashboard() {
         fetchCategories()
       ]);
       
-      // Asirratti getclientdemande fayyadamna
       if (getclientdemande) {
         const res = await getclientdemande();
         const userRequests = Array.isArray(res) ? res : res?.data || [];
@@ -71,7 +69,7 @@ export default function ClientDashboard() {
         userRequests.forEach((req) => {
           const serviceId = req.service_id || req.service?.id;
           if (serviceId) {
-            requestsMap[serviceId] = req.id; // Request ID kuufna
+            requestsMap[serviceId] = req.id;
           }
         });
         setRequestedServices(requestsMap);
@@ -121,7 +119,6 @@ export default function ClientDashboard() {
       await makeServiceRequest(selectedServiceId, formData);
       setSuccessMessage("Votre demande d'intervention a été envoyée avec succès!");
 
-      // Data deebisnee fe'uun ID ajaja haaraa arganna
       await loadDashboardData();
 
       setTimeout(() => {
@@ -158,14 +155,14 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div className="space-y-8 relative">
+    <div className="space-y-8 relative font-sans text-slate-800">
       {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Tableau de bord Client
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Découvrez les services disponibles et demandez une intervention en un clic.
           </p>
         </div>
@@ -173,24 +170,24 @@ export default function ClientDashboard() {
         <button
           onClick={loadDashboardData}
           disabled={loadingServices || loadingCategories}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-sm font-medium transition active:scale-95 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium transition active:scale-95 disabled:opacity-50 shadow-sm"
         >
-          <RefreshCw size={16} className={loadingServices || loadingCategories ? "animate-spin text-cyan-400" : ""} />
+          <RefreshCw size={16} className={loadingServices || loadingCategories ? "animate-spin text-blue-600" : "text-slate-500"} />
           <span>Actualiser</span>
         </button>
       </div>
 
       {/* MESSAGES D'INFORMATIONS FAVORIS */}
       {favMessage && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3 animate-in fade-in duration-200">
-          <CheckCircle2 size={18} className="shrink-0" />
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-center gap-3 animate-in fade-in duration-200">
+          <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
           <span>{favMessage}</span>
         </div>
       )}
 
       {favError && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-3 animate-in fade-in duration-200">
-          <AlertCircle size={18} className="shrink-0" />
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3 animate-in fade-in duration-200">
+          <AlertCircle size={18} className="shrink-0 text-red-600" />
           <span>{typeof favError === "string" ? favError : favError?.message || "Erreur lors de la mise à jour des favoris"}</span>
         </div>
       )}
@@ -198,23 +195,23 @@ export default function ClientDashboard() {
       {/* SEARCH BAR & CATEGORIES SECTION */}
       <div className="space-y-4">
         <div className="relative max-w-md">
-          <Search className="absolute left-3.5 top-3 text-slate-500" size={18} />
+          <Search className="absolute left-3.5 top-3 text-slate-400" size={18} />
           <input
             type="text"
             placeholder="Rechercher un service par nom..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 transition shadow-sm"
           />
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 scrollbar-thin max-w-full">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border shadow-sm ${
               selectedCategory === null
-                ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold shadow-lg shadow-cyan-500/20"
-                : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800"
+                ? "bg-blue-600 text-white border-blue-600 font-bold"
+                : "bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50"
             }`}
           >
             <Grid size={14} />
@@ -227,10 +224,10 @@ export default function ClientDashboard() {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border ${
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border shadow-sm ${
                   isSelected
-                    ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold shadow-lg shadow-cyan-500/20"
-                    : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800"
+                    ? "bg-blue-600 text-white border-blue-600 font-bold"
+                    : "bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
                 <Tag size={13} />
@@ -245,10 +242,10 @@ export default function ClientDashboard() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Wrench className="text-cyan-400" size={20} />
-            <h2 className="text-lg font-semibold text-slate-200">Services disponibles</h2>
+            <Wrench className="text-blue-600" size={20} />
+            <h2 className="text-lg font-bold text-slate-900">Services disponibles</h2>
           </div>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 font-medium">
             {filteredServices.length} service(s) trouvé(s)
           </span>
         </div>
@@ -258,26 +255,26 @@ export default function ClientDashboard() {
             {[1, 2, 3].map((n) => (
               <div 
                 key={n} 
-                className="h-64 rounded-2xl bg-slate-900/40 border border-slate-800 animate-pulse p-6 space-y-4"
+                className="h-64 rounded-2xl bg-white border border-slate-200 animate-pulse p-6 space-y-4 shadow-sm"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-800"></div>
+                  <div className="w-12 h-12 rounded-full bg-slate-200"></div>
                   <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-slate-800 rounded w-1/2"></div>
-                    <div className="h-3 bg-slate-800 rounded w-1/3"></div>
+                    <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-slate-200 rounded w-1/3"></div>
                   </div>
                 </div>
-                <div className="h-10 bg-slate-800 rounded-lg"></div>
-                <div className="h-10 bg-slate-800 rounded-xl"></div>
+                <div className="h-10 bg-slate-200 rounded-lg"></div>
+                <div className="h-10 bg-slate-200 rounded-xl"></div>
               </div>
             ))}
           </div>
         )}
 
         {!loadingServices && filteredServices.length === 0 && (
-          <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md">
-            <AlertCircle size={40} className="mx-auto text-slate-500 mb-3" />
-            <h3 className="text-base font-medium text-slate-300">Aucun service trouvé</h3>
+          <div className="p-12 text-center rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <AlertCircle size={40} className="mx-auto text-slate-400 mb-3" />
+            <h3 className="text-base font-semibold text-slate-800">Aucun service trouvé</h3>
             <p className="text-xs text-slate-500 mt-1">
               {searchTerm || selectedCategory 
                 ? "Essayez de modifier vos critères de recherche ou de catégorie."
@@ -298,13 +295,13 @@ export default function ClientDashboard() {
               return (
                 <div
                   key={service.id}
-                  className="group relative flex flex-col justify-between rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 backdrop-blur-md hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300"
+                  className="group relative flex flex-col justify-between rounded-2xl bg-white border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-300"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex items-center gap-3.5">
                         <div className="relative">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg overflow-hidden">
+                          <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg overflow-hidden shrink-0">
                             {service.image && service.image !== "profile.jpg" ? (
                               <img
                                 src={service.image}
@@ -318,21 +315,21 @@ export default function ClientDashboard() {
                               <span>{service.name ? service.name[0] : (service.title ? service.title[0] : 'T')}</span>
                             )}
                           </div>
-                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
                         </div>
 
                         <div>
-                          <h3 className="font-semibold text-slate-100 group-hover:text-cyan-400 transition">
+                          <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition">
                             {service.name || "Technicien"}
                           </h3>
-                          <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                          <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                             <span className="flex items-center gap-1">
-                              <Briefcase size={12} className="text-slate-500" />
+                              <Briefcase size={12} className="text-slate-400" />
                               {service.experience || "N/A"}
                             </span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                              <Phone size={12} className="text-slate-500" />
+                              <Phone size={12} className="text-slate-400" />
                               {service.phone || "Non renseigné"}
                             </span>
                           </div>
@@ -345,8 +342,8 @@ export default function ClientDashboard() {
                         onClick={() => handleToggleFavorite(service.id)}
                         className={`p-2 rounded-xl border transition-all duration-200 active:scale-90 shrink-0 ${
                           isFav
-                            ? "bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20"
-                            : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/10"
+                            ? "bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100"
+                            : "bg-slate-50 border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50"
                         }`}
                       >
                         <Heart 
@@ -358,27 +355,27 @@ export default function ClientDashboard() {
 
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-full">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
                           {service.title}
                         </span>
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
                           <Tag size={12} /> Cat #{service.category_id}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-300 leading-relaxed line-clamp-2">
+                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
                         {service.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-800/80 space-y-4">
+                  <div className="pt-4 border-t border-slate-100 space-y-4">
                     <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-slate-400">Tarif estimé</span>
+                      <span className="text-xs text-slate-500 font-medium">Tarif estimé</span>
                       <div className="text-right">
-                        <span className="text-xl font-bold text-white">
+                        <span className="text-xl font-extrabold text-slate-900">
                           {service.price ? parseFloat(service.price).toLocaleString() : '0'}
                         </span>
-                        <span className="text-xs font-medium text-cyan-400 ml-1">DH</span>
+                        <span className="text-xs font-bold text-blue-600 ml-1">DH</span>
                       </div>
                     </div>
 
@@ -386,7 +383,7 @@ export default function ClientDashboard() {
                       <button
                         onClick={() => handleCancelRequest(service.id)}
                         disabled={submitting}
-                        className="w-full flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-2.5 px-4 rounded-xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold py-2.5 px-4 rounded-xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50 text-xs"
                       >
                         <XCircle size={16} />
                         <span>Annuler la demande</span>
@@ -395,7 +392,7 @@ export default function ClientDashboard() {
                       <button
                         onClick={() => handleOpenModal(service.id)}
                         disabled={submitting}
-                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-2.5 px-4 rounded-xl shadow-lg shadow-cyan-500/20 transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50 text-xs"
                       >
                         <Send size={16} />
                         <span>Demander le service</span>
@@ -411,41 +408,41 @@ export default function ClientDashboard() {
 
       {/* MODAL FORM DEMANDE */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl relative space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-md shadow-xl relative space-y-5">
             
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Send size={18} className="text-cyan-400" />
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Send size={18} className="text-blue-600" />
                 Demander une intervention
               </h3>
               <button
                 onClick={handleCloseModal}
                 disabled={submitting}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition disabled:opacity-50"
               >
                 <X size={20} />
               </button>
             </div>
 
             {apiError && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle size={16} className="shrink-0" />
+              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0 text-red-600" />
                 <span>{apiError}</span>
               </div>
             )}
 
             {successMessage && (
-              <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
-                <CheckCircle2 size={16} className="shrink-0" />
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+                <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
                 <span>{successMessage}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                  <FileText size={14} className="text-cyan-400" />
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <FileText size={14} className="text-blue-600" />
                   Description du besoin
                 </label>
                 <textarea
@@ -455,13 +452,13 @@ export default function ClientDashboard() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Expliquez en détails le problème ou l'intervention souhaitée..."
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-600 outline-none transition resize-none disabled:opacity-50"
+                  className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-xl p-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition resize-none disabled:opacity-50 shadow-sm"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                  <Calendar size={14} className="text-cyan-400" />
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Calendar size={14} className="text-blue-600" />
                   Date d'intervention souhaitée
                 </label>
                 <input
@@ -470,23 +467,23 @@ export default function ClientDashboard() {
                   disabled={submitting || successMessage}
                   value={formData.scheduled_date}
                   onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-xl p-3 text-sm text-slate-200 outline-none transition [color-scheme:dark] disabled:opacity-50"
+                  className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-xl p-3 text-sm text-slate-800 outline-none transition disabled:opacity-50 shadow-sm"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={submitting}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition disabled:opacity-50"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitting || successMessage}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 transition active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   {submitting && <RefreshCw size={14} className="animate-spin" />}
                   <span>{submitting ? "Envoi en cours..." : "Confirmer la demande"}</span>

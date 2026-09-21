@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom'; // <--- Zdna NavLink hna
+import { NavLink } from 'react-router-dom';
 import { 
   Home, Wrench, Calendar, MessageSquare, Heart, 
   LayoutGrid, Users, ShieldCheck, Star, Clock 
@@ -33,22 +33,23 @@ export default function Sidebar({ isOpen, setIsOpen, role }) {
 
   return (
     <>
+      {/* Mobile Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-30
-        w-64 bg-slate-900/60 border-r border-slate-800/80 backdrop-blur-lg
+        w-64 bg-white border-r border-slate-200
         transform transition-transform duration-200 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        flex flex-col justify-between pt-16 lg:pt-0
+        flex flex-col justify-between pt-20 lg:pt-6
       `}>
-        <div className="px-4 py-6 space-y-1">
-          <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+        <div className="px-4 space-y-1.5">
+          <p className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
             Espace {role}
           </p>
 
@@ -58,17 +59,17 @@ export default function Sidebar({ isOpen, setIsOpen, role }) {
               <NavLink
                 key={item.name}
                 to={item.to}
-                onClick={() => setIsOpen(false)} // Khashha t-sdd Sidebar f Mobile mni t-cliqui 3la lien
+                onClick={() => setIsOpen(false)}
                 className={({ isActive }) => `
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition group
+                  flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all group
                   ${isActive 
-                    ? 'bg-cyan-500/10 text-cyan-400 font-semibold border border-cyan-500/20' 
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-cyan-400'}
+                    ? 'bg-blue-50 text-blue-600 font-semibold border border-blue-100 shadow-sm' 
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={18} className={isActive ? "text-cyan-400" : "text-slate-400 group-hover:text-cyan-400 transition"} />
+                    <Icon size={18} className={isActive ? "text-blue-600" : "text-slate-400 group-hover:text-blue-600 transition"} />
                     <span>{item.name}</span>
                   </>
                 )}
