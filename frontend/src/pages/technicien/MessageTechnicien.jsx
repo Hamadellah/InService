@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useMessage } from '../../hooks/usemessage';
 import { 
-  MessageSquare, User, Send, Loader2, Search, ArrowLeft 
+  MessageSquare, User, Phone, MessageCircle, Loader2, Search, RefreshCw, Clock, MapPin 
 } from 'lucide-react';
 
 export default function MessageTechnicien() {
-  const { messages, loading, postMessages, getMessages } = useMessage();
-  
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [replyText, setReplyText] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const { messages, loading, getMessages } = useMessage();
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -17,221 +13,150 @@ export default function MessageTechnicien() {
       getMessages();
     }
   }, []);
+  useEffect(() => {
+    console.log("Messages fetched:", messages);
+  }, [messages]);
 
-  const messagesList = Array.isArray(messages) ? messages : [];
+  // Extraction et gestion du tableau de données
+  const rawMessages = messages?.data || messages?.messages || messages;
+  const messagesList = Array.isArray(rawMessages) ? rawMessages : [];
 
-  // Groupement d-les messages par L'AUTRE UTILISATEUR (Client)
-  const conversations = messagesList.reduce((acc, msg) => {
-    // 1. تحديد الـ ID ديال الكليان (الطرف الآخر)
-    const partnerId = msg.other_user_id || (msg.sender_id === msg.client_user_id ? msg.sender_id : msg.receiver_id) || msg.sender_id;
-
-    if (!acc[partnerId]) {
-      acc[partnerId] = {
-        userId: partnerId,
-        userName: msg.name || msg.sender_name || msg.user_name || "Client",
-        userImage: msg.image || msg.sender_image || msg.user_image,
-        lastMessage: msg.message,
-        lastTime: msg.created_at,
-        messagesList: []
-      };
-    }
-    
-    // تحديث أخر ميساج
-    acc[partnerId].lastMessage = msg.message;
-    acc[partnerId].lastTime = msg.created_at;
-    acc[partnerId].messagesList.push(msg);
-    
-    return acc;
-  }, {});
-
-  const usersList = Object.values(conversations).filter(c => 
-    c.userName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!replyText.trim() || !selectedUser) return;
-
-    setIsSending(true);
-    try {
-      const res = await postMessages(selectedUser.userId, { message: replyText });
-      
-      if (res) {
-        // إضافة الميساج الجديد مباشرة للمحادثة الحالية
-        const newMessage = {
-          id: res.id || Date.now(),
-          message: replyText,
-          sender_id: 'me',
-          created_at: new Date().toISOString()
-        };
-        
-        selectedUser.messagesList.push(newMessage);
-        selectedUser.lastMessage = replyText;
-        selectedUser.lastTime = newMessage.created_at;
-        
-        setReplyText("");
-      }
-    } catch (err) {
-      console.error("Erreur d'envoi du message:", err);
-    } finally {
-      setIsSending(false);
-    }
-  };
+  // Filtrage des messages par recherche (nom du client ou ville)
+  const filteredMessages = messagesList.filter((msg) => {
+    const clientName = msg.sender_name ;
+    const city = msg.city || msg.sender?.city || "";
+    return (
+      clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      city.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   if (loading && messagesList.length === 0) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-slate-400 gap-3">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-slate-400 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-        <p className="text-sm">Chargement de votre messagerie...</p>
+        <p className="text-sm">Chargement des messages des clients...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-2 sm:p-6 max-w-7xl mx-auto">
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur-xl h-[80vh] flex overflow-hidden shadow-2xl">
-        
-        {/* Sidebar */}
-        <div className={`w-full md:w-80 lg:w-96 border-r border-slate-800 flex flex-col ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
-          <div className="p-4 border-b border-slate-800 space-y-3">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <MessageSquare className="text-cyan-400" size={22} />
-              Messages
-            </h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 text-slate-500" size={16} />
-              <input
-                type="text"
-                placeholder="Rechercher un client..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
-            {usersList.length === 0 ? (
-              <div className="p-6 text-center text-slate-500 text-xs">
-                Aucun message trouvé.
-              </div>
-            ) : (
-              usersList.map((chat) => {
-                const isSelected = selectedUser?.userId === chat.userId;
-                return (
-                  <div
-                    key={chat.userId}
-                    onClick={() => setSelectedUser(chat)}
-                    className={`p-3.5 flex items-center gap-3 cursor-pointer transition ${
-                      isSelected 
-                        ? 'bg-cyan-500/10 border-l-4 border-cyan-400' 
-                        : 'hover:bg-slate-800/50'
-                    }`}
-                  >
-                    {chat.userImage ? (
-                      <img src={chat.userImage} alt="" className="w-11 h-11 rounded-full object-cover border border-slate-700" />
-                    ) : (
-                      <div className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center text-cyan-400 border border-slate-700 shrink-0">
-                        <User size={20} />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="text-sm font-semibold text-white truncate">{chat.userName}</h4>
-                        <span className="text-[10px] text-slate-500">
-                          {chat.lastTime ? new Date(chat.lastTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-400 truncate">{chat.lastMessage}</p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
+      {/* En-tête */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <MessageSquare className="text-cyan-400" size={26} />
+            Demandes & Messages Clients
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Consultez les messages reçus et les informations de contact pour joindre vos clients.
+          </p>
         </div>
 
-        {/* Chat Window */}
-        <div className={`flex-1 flex flex-col ${!selectedUser ? 'hidden md:flex' : 'flex'}`}>
-          {selectedUser ? (
-            <>
-              {/* Header Chat */}
-              <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => setSelectedUser(null)}
-                    className="md:hidden text-slate-400 hover:text-white p-1"
-                  >
-                    <ArrowLeft size={20} />
-                  </button>
-                  {selectedUser.userImage ? (
-                    <img src={selectedUser.userImage} alt="" className="w-10 h-10 rounded-full object-cover border border-cyan-500/30" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-cyan-400 border border-slate-700">
-                      <User size={18} />
+        <button
+          onClick={getMessages}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition active:scale-95 shrink-0"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin text-cyan-400" : ""} />
+          <span>Actualiser</span>
+        </button>
+      </div>
+
+      {/* Barre de recherche */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3.5 top-3 text-slate-500" size={16} />
+        <input
+          type="text"
+          placeholder="Rechercher par nom de client ou ville..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+        />
+      </div>
+
+      {/* Message quand la liste est vide */}
+      {filteredMessages.length === 0 && (
+        <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800">
+          <MessageSquare size={40} className="mx-auto text-slate-600 mb-3" />
+          <h3 className="text-sm font-medium text-slate-300">Aucun message trouvé</h3>
+          <p className="text-xs text-slate-500 mt-1">Vous n'avez actuellement aucun message client enregistré.</p>
+        </div>
+      )}
+
+      {/* Grille des messages */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredMessages.map((msg, index) => {
+          const clientName = msg.sender_name || "Client";
+          const clientPhone = msg.sender_phone || "0600000000";
+          const clientImage = msg.sender_image ;
+          const clientCity = msg.sender_city ;
+          const messageText = msg.message || msg.content || msg.text || "";
+          const messageTime = msg.created_at ? new Date(msg.created_at).toLocaleString('fr-FR') : "Récemment";
+
+          return (
+            <div
+              key={msg.id || index}
+              className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md flex flex-col justify-between hover:border-slate-700 transition space-y-4"
+            >
+              <div>
+                {/* Information du profil du client */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    {clientImage ? (
+                      <img
+                        src={clientImage}
+                        alt={clientName}
+                        className="w-12 h-12 rounded-full object-cover border border-cyan-500/30"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-cyan-400 border border-slate-700 shrink-0">
+                        <User size={22} />
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 className="font-bold text-white text-base">{clientName}</h3>
+                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                        <span className="flex items-center gap-1">
+                          <MapPin size={12} className="text-cyan-400" />
+                          {clientCity}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-white text-sm">{selectedUser.userName}</h3>
-                    <p className="text-[11px] text-cyan-400">Discussion active</p>
                   </div>
+
+                  <span className="text-[11px] text-slate-500 flex items-center gap-1 shrink-0">
+                    <Clock size={12} />
+                    {messageTime}
+                  </span>
+                </div>
+
+                {/* Contenu du message */}
+                <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  {messageText}
                 </div>
               </div>
 
-              {/* Discussion Body */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-950/20">
-                {selectedUser.messagesList.map((m, idx) => {
-                  // التمييز بين الميساج المصيفت والمستقبل
-                  const isMe = m.sender_id === 'me' || m.sender_id !== selectedUser.userId;
-                  return (
-                    <div 
-                      key={idx} 
-                      className={`flex flex-col space-y-1 ${isMe ? 'items-end' : 'items-start'}`}
-                    >
-                      <div className={`max-w-[75%] p-3 rounded-2xl text-xs sm:text-sm ${
-                        isMe 
-                          ? 'bg-cyan-600 text-white rounded-tr-none' 
-                          : 'bg-slate-800/90 text-slate-200 border border-slate-700/60 rounded-tl-none'
-                      }`}>
-                        {m.message}
-                      </div>
-                      <span className="text-[10px] text-slate-500 px-1">
-                        {m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Badges d'information pour contacter le client */}
+              <div className="pt-3 border-t border-slate-800/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                
+                {/* Badge WhatsApp */}
+                <div className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
+                  <MessageCircle size={15} className="shrink-0" />
+                  <span>Contacter sur WhatsApp : <strong className="font-semibold text-green-300">{clientPhone}</strong></span>
+                </div>
 
-              {/* Input Form */}
-              <form onSubmit={handleSend} className="p-3 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2">
-                <input
-                  type="text"
-                  required
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Écrivez votre réponse..."
-                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
-                />
-                <button
-                  type="submit"
-                  disabled={isSending || !replyText.trim()}
-                  className="p-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl transition active:scale-95 disabled:opacity-50"
-                >
-                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                </button>
-              </form>
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500 space-y-3">
-              <div className="p-4 bg-slate-800/40 rounded-full border border-slate-800 text-cyan-400">
-                <MessageSquare size={32} />
+                {/* Badge Appel */}
+                <div className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                  <Phone size={15} className="shrink-0" />
+                  <span>Appeler le client : <strong className="font-semibold text-emerald-300">{clientPhone}</strong></span>
+                </div>
+
               </div>
-              <p className="text-sm">Sélectionnez un client pour voir la conversation.</p>
             </div>
-          )}
-        </div>
-
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useservice } from "../../hooks/useservice";
+import { usecategory } from "../../hooks/usecategory";
 import { useServiceRequest } from "../../hooks/useservicerequest";
+import { useFavorites } from "../../hooks/usefavorites";
 import { 
   Wrench, 
   Phone, 
@@ -13,19 +15,31 @@ import {
   Calendar,
   FileText,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Heart,
+  Search,
+  Grid
 } from "lucide-react";
 
 export default function ClientDashboard() {
   const { services, loading: loadingServices, fetchServices } = useservice();
+  const { categories, loading: loadingCategories, fetchCategories } = usecategory();
 
   const { 
     makeServiceRequest, 
     deleteServiceRequest, 
-    getMyRequests, // Function bāsh njībū les demandes d l-client mn Backend
+    getMyRequests, 
     loading: submitting, 
     error: apiError 
   } = useServiceRequest();
+
+  const { 
+    favorites, 
+    loading: loadingFav, 
+    message: favMessage, 
+    error: favError, 
+    makeFavorite 
+  } = useFavorites();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
@@ -35,20 +49,24 @@ export default function ClientDashboard() {
   });
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // Object mapping: serviceId -> requestId (State d React bla localStorage)
+  // States pour le filtrage et la recherche
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // State local des demandes de service
   const [requestedServices, setRequestedServices] = useState({});
 
-  // 1. Fetching dyal Services & My Requests mn l-Backend f-degga waḥda
   const loadDashboardData = async () => {
     try {
-      await fetchServices();
+      await Promise.all([
+        fetchServices(),
+        fetchCategories()
+      ]);
       
-      // Njībū les demandes dyal l-client l-mconnecti mn l-Backend
       if (getMyRequests) {
         const res = await getMyRequests();
         const userRequests = Array.isArray(res) ? res : res?.data || [];
         
-        // N-ḥawlū les demandes l-object: { service_id: request_id }
         const requestsMap = {};
         userRequests.forEach((req) => {
           const serviceId = req.service_id || req.service?.id;
@@ -66,6 +84,27 @@ export default function ClientDashboard() {
   useEffect(() => {
     loadDashboardData();
   }, []);
+  useEffect(() => {
+    console.log("services:", services);
+  }, [services]);
+
+  // Filtrage combiné par Catégorie et Nom du Service
+  const rawServices = Array.isArray(services) ? services : services?.data || [];
+  
+  const filteredServices = rawServices.filter((service) => {
+    const serviceTitle = service.description || service.title || "";
+    const matchesSearch = serviceTitle.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategory 
+      ? Number(service.category_id) === Number(selectedCategory)
+      : true;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleToggleFavorite = async (serviceId) => {
+    await makeFavorite(serviceId);
+  };
 
   const handleOpenModal = (serviceId) => {
     setSelectedServiceId(serviceId);
@@ -79,16 +118,13 @@ export default function ClientDashboard() {
     setSelectedServiceId(null);
   };
 
-  // Submit Form (Créer la demande)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const response = await makeServiceRequest(selectedServiceId, formData);
-      
       const requestId = response?.id || response?.data?.id || response?.request?.id;
 
-      // N-mājīw l-state b-demande l-jdīda
       setRequestedServices((prev) => ({
         ...prev,
         [selectedServiceId]: requestId || true,
@@ -106,7 +142,6 @@ export default function ClientDashboard() {
     }
   };
 
-  // Annuler la demande via Backend
   const handleCancelRequest = async (serviceId) => {
     const requestId = requestedServices[serviceId];
 
@@ -119,7 +154,6 @@ export default function ClientDashboard() {
       try {
         await deleteServiceRequest(requestId);
 
-        // N-msḥū l-service mn state dyal React
         setRequestedServices((prev) => {
           const updated = { ...prev };
           delete updated[serviceId];
@@ -130,6 +164,7 @@ export default function ClientDashboard() {
       }
     }
   };
+ 
 
   return (
     <div className="space-y-8 relative">
@@ -146,19 +181,87 @@ export default function ClientDashboard() {
 
         <button
           onClick={loadDashboardData}
-          disabled={loadingServices}
+          disabled={loadingServices || loadingCategories}
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-sm font-medium transition active:scale-95 disabled:opacity-50"
         >
-          <RefreshCw size={16} className={loadingServices ? "animate-spin text-cyan-400" : ""} />
+          <RefreshCw size={16} className={loadingServices || loadingCategories ? "animate-spin text-cyan-400" : ""} />
           <span>Actualiser</span>
         </button>
       </div>
 
+      {/* MESSAGES D'INFORMATIONS FAVORIS */}
+      {favMessage && (
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-3 animate-in fade-in duration-200">
+          <CheckCircle2 size={18} className="shrink-0" />
+          <span>{favMessage}</span>
+        </div>
+      )}
+
+      {favError && (
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-3 animate-in fade-in duration-200">
+          <AlertCircle size={18} className="shrink-0" />
+          <span>{typeof favError === "string" ? favError : favError?.message || "Erreur lors de la mise à jour des favoris"}</span>
+        </div>
+      )}
+
+      {/* SEARCH BAR & CATEGORIES SECTION */}
+      <div className="space-y-4">
+        {/* BARRE DE RECHERCHE */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3.5 top-3 text-slate-500" size={18} />
+          <input
+            type="text"
+            placeholder="Rechercher un service par nom..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+          />
+        </div>
+
+        {/* LISTE DES CATÉGORIES (BOUTONS DE FILTRE) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 border ${
+              selectedCategory === null
+                ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold"
+                : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <Grid size={14} />
+            <span>Toutes les catégories</span>
+          </button>
+
+          {categories && categories.map((cat) => {
+            const isSelected = Number(selectedCategory) === Number(cat.id);
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 border ${
+                  isSelected
+                    ? "bg-cyan-500 text-slate-950 border-cyan-400 font-bold"
+                    : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800"
+                }`}
+              >
+                <Tag size={13} />
+                <span>{cat.name || cat.title || `Catégorie #${cat.id}`}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* SERVICES SECTION */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Wrench className="text-cyan-400" size={20} />
-          <h2 className="text-lg font-semibold text-slate-200">Services disponibles</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Wrench className="text-cyan-400" size={20} />
+            <h2 className="text-lg font-semibold text-slate-200">Services disponibles</h2>
+          </div>
+          <span className="text-xs text-slate-500">
+            {filteredServices.length} service(s) trouvé(s)
+          </span>
         </div>
 
         {loadingServices && (
@@ -182,18 +285,26 @@ export default function ClientDashboard() {
           </div>
         )}
 
-        {!loadingServices && services && services.length === 0 && (
+        {!loadingServices && filteredServices.length === 0 && (
           <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-md">
             <AlertCircle size={40} className="mx-auto text-slate-500 mb-3" />
-            <h3 className="text-base font-medium text-slate-300">Aucun service disponible</h3>
-            <p className="text-xs text-slate-500 mt-1">Revenez plus tard pour découvrir de nouvelles prestations.</p>
+            <h3 className="text-base font-medium text-slate-300">Aucun service trouvé</h3>
+            <p className="text-xs text-slate-500 mt-1">
+              {searchTerm || selectedCategory 
+                ? "Essayez de modifier vos critères de recherche ou de catégorie."
+                : "Revenez plus tard pour découvrir de nouvelles prestations."}
+            </p>
           </div>
         )}
 
-        {!loadingServices && services && services.length > 0 && (
+        {!loadingServices && filteredServices.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service) => {
+            {filteredServices.map((service) => {
               const isRequested = Boolean(requestedServices[service.id]);
+
+              const isFav = Array.isArray(favorites) && favorites.some(
+                (fav) => fav.id === service.id || fav.service_id === service.id || fav === service.id
+              );
 
               return (
                 <div
@@ -201,41 +312,60 @@ export default function ClientDashboard() {
                   className="group relative flex flex-col justify-between rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 backdrop-blur-md hover:border-cyan-500/50 hover:shadow-xl hover:shadow-cyan-500/5 transition-all duration-300"
                 >
                   <div>
-                    <div className="flex items-center gap-3.5 mb-4">
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg overflow-hidden">
-                          {service.image && service.image !== "profile.jpg" ? (
-                            <img
-                              src={service.image}
-                              alt={service.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <span>{service.name ? service.name[0] : 'T'}</span>
-                          )}
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3.5">
+                        <div className="relative">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-lg overflow-hidden">
+                            {service.image && service.image !== "profile.jpg" ? (
+                              <img
+                                src={service.image}
+                                alt={service.name || service.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <span>{service.name ? service.name[0] : (service.title ? service.title[0] : 'T')}</span>
+                            )}
+                          </div>
+                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
                         </div>
-                        <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+
+                        <div>
+                          <h3 className="font-semibold text-slate-100 group-hover:text-cyan-400 transition">
+                            {service.name || "Technicien"}
+                          </h3>
+                          <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                            <span className="flex items-center gap-1">
+                              <Briefcase size={12} className="text-slate-500" />
+                              {service.experience || "N/A"}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Phone size={12} className="text-slate-500" />
+                              {service.phone || "Non renseigné"}
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <h3 className="font-semibold text-slate-100 group-hover:text-cyan-400 transition">
-                          {service.name || "Technicien"}
-                        </h3>
-                        <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                          <span className="flex items-center gap-1">
-                            <Briefcase size={12} className="text-slate-500" />
-                            {service.experience || "N/A"}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Phone size={12} className="text-slate-500" />
-                            {service.phone || "Non renseigné"}
-                          </span>
-                        </div>
-                      </div>
+                      {/* FAVORITE BUTTON */}
+                      <button
+                        type="button"
+                        disabled={loadingFav}
+                        onClick={() => handleToggleFavorite(service.id)}
+                        className={`p-2 rounded-xl border transition-all duration-200 active:scale-90 shrink-0 ${
+                          isFav
+                            ? "bg-rose-500/10 border-rose-500/30 text-rose-500 hover:bg-rose-500/20"
+                            : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/10"
+                        }`}
+                      >
+                        <Heart 
+                          size={18} 
+                          className={isFav ? "fill-rose-500 text-rose-500" : ""} 
+                        />
+                      </button>
                     </div>
 
                     <div className="space-y-2 mb-4">

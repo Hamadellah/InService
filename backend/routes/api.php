@@ -9,6 +9,7 @@ use App\Http\Controllers\api\ServiceRequestController;
 use App\Http\Controllers\api\TechnicienController;
 use App\Http\Controllers\api\ClientController;
 use App\Http\Controllers\api\MessageController;
+use App\Http\Controllers\api\FavoriteController;
 
 
 Route::post('/register',[AuthController::class,'register']);
@@ -30,11 +31,15 @@ Route::middleware(['auth:sanctum','technicien'])->group(function(){
 
 });
 Route::middleware(['auth:sanctum','client'])->group(function(){
+        route::get('/categories',[CategoryController::class,'show']);
+
     Route::post('/makeServiceRequest/{serviceId}',[ServiceRequestController::class,'makeServiceRequest']);
     Route::delete('/deleteServiceRequest/{serviceId}',[ServiceRequestController::class,'deleteServiceRequest']);
     Route::get('/clientServiceRequests',[ClientController::class,'getServiceRequests']);
     Route::post('/sendMessage/{id}',[MessageController::class,'sendMessage']);
     Route::get('/services',[ServiceController::class,'showService']);
+    Route::post('/favorite/{serviceId}',[FavoriteController::class,'makeFavorite']);
+    Route::get('/getfavorites',[FavoriteController::class,'getFavorites']);
     
    
 });
