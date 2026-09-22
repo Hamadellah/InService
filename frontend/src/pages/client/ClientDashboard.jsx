@@ -24,6 +24,9 @@ import {
 export default function ClientDashboard() {
   const { services, loading: loadingServices, fetchServices } = useservice();
   const { categories, loading: loadingCategories, fetchCategories } = usecategory();
+  useEffect(() => {
+    console.log("categories:", categories);
+  }, [categories]);
 
   const { 
     makeServiceRequest, 
@@ -155,345 +158,433 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div className="space-y-8 relative font-sans text-slate-800">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 pb-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Tableau de bord Client
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Découvrez les services disponibles et demandez une intervention en un clic.
-          </p>
-        </div>
+    <div className="min-h-full bg-[#f5f7f6] p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-[1500px] space-y-7">
 
-        <button
-          onClick={loadDashboardData}
-          disabled={loadingServices || loadingCategories}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium transition active:scale-95 disabled:opacity-50 shadow-sm"
-        >
-          <RefreshCw size={16} className={loadingServices || loadingCategories ? "animate-spin text-blue-600" : "text-slate-500"} />
-          <span>Actualiser</span>
-        </button>
-      </div>
+        <section className="relative overflow-hidden rounded-[34px] bg-[#0d1f1a] px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+          <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 right-[28%] h-36 w-36 rounded-full bg-emerald-300/5 blur-2xl" />
 
-      {/* MESSAGES D'INFORMATIONS FAVORIS */}
-      {favMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-center gap-3 animate-in fade-in duration-200">
-          <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
-          <span>{favMessage}</span>
-        </div>
-      )}
-
-      {favError && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3 animate-in fade-in duration-200">
-          <AlertCircle size={18} className="shrink-0 text-red-600" />
-          <span>{typeof favError === "string" ? favError : favError?.message || "Erreur lors de la mise à jour des favoris"}</span>
-        </div>
-      )}
-
-      {/* SEARCH BAR & CATEGORIES SECTION */}
-      <div className="space-y-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3.5 top-3 text-slate-400" size={18} />
-          <input
-            type="text"
-            placeholder="Rechercher un service par nom..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 transition shadow-sm"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 scrollbar-thin max-w-full">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border shadow-sm ${
-              selectedCategory === null
-                ? "bg-blue-600 text-white border-blue-600 font-bold"
-                : "bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50"
-            }`}
-          >
-            <Grid size={14} />
-            <span>Toutes les catégories</span>
-          </button>
-
-          {categories && categories.map((cat) => {
-            const isSelected = Number(selectedCategory) === Number(cat.id);
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition flex items-center gap-1.5 border shadow-sm ${
-                  isSelected
-                    ? "bg-blue-600 text-white border-blue-600 font-bold"
-                    : "bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-50"
-                }`}
-              >
-                <Tag size={13} />
-                <span>{cat.name || cat.title || `Catégorie #${cat.id}`}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* SERVICES SECTION */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Wrench className="text-blue-600" size={20} />
-            <h2 className="text-lg font-bold text-slate-900">Services disponibles</h2>
-          </div>
-          <span className="text-xs text-slate-500 font-medium">
-            {filteredServices.length} service(s) trouvé(s)
-          </span>
-        </div>
-
-        {loadingServices && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((n) => (
-              <div 
-                key={n} 
-                className="h-64 rounded-2xl bg-white border border-slate-200 animate-pulse p-6 space-y-4 shadow-sm"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-200"></div>
-                  <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-                    <div className="h-3 bg-slate-200 rounded w-1/3"></div>
-                  </div>
-                </div>
-                <div className="h-10 bg-slate-200 rounded-lg"></div>
-                <div className="h-10 bg-slate-200 rounded-xl"></div>
+          <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                  Espace Client
+                </span>
               </div>
-            ))}
+
+              <h1 className="text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl">
+                Trouvez le bon service,
+                <span className="block text-emerald-400">simplement.</span>
+              </h1>
+
+              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+                Parcourez les prestations disponibles, choisissez votre technicien
+                et envoyez votre demande d'intervention.
+              </p>
+            </div>
+
+            <button
+              onClick={loadDashboardData}
+              disabled={loadingServices || loadingCategories}
+              className="inline-flex h-12 items-center justify-center gap-2 self-start rounded-2xl border border-white/10 bg-white/10 px-5 text-sm font-bold text-white transition hover:bg-white/15 disabled:opacity-50 lg:self-auto"
+            >
+              <RefreshCw
+                size={17}
+                className={loadingServices || loadingCategories ? "animate-spin text-emerald-400" : "text-emerald-400"}
+              />
+              Actualiser
+            </button>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-[26px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                  Services disponibles
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#0d1f1a]">{rawServices.length}</p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <Wrench size={21} />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[26px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                  Résultats affichés
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#0d1f1a]">{filteredServices.length}</p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <Search size={21} />
+              </div>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-[26px] bg-emerald-400 p-5 text-[#0d1f1a] shadow-[0_14px_35px_rgba(16,185,129,0.18)]">
+            <div className="absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-white/15" />
+            <div className="relative flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-950/60">
+                  Mes demandes
+                </p>
+                <p className="mt-2 text-3xl font-black">{Object.keys(requestedServices).length}</p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300">
+                <Send size={20} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {favMessage && (
+          <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            <CheckCircle2 size={18} />
+            {favMessage}
           </div>
         )}
 
-        {!loadingServices && filteredServices.length === 0 && (
-          <div className="p-12 text-center rounded-2xl bg-white border border-slate-200 shadow-sm">
-            <AlertCircle size={40} className="mx-auto text-slate-400 mb-3" />
-            <h3 className="text-base font-semibold text-slate-800">Aucun service trouvé</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              {searchTerm || selectedCategory 
-                ? "Essayez de modifier vos critères de recherche ou de catégorie."
-                : "Revenez plus tard pour découvrir de nouvelles prestations."}
-            </p>
+        {favError && (
+          <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            <AlertCircle size={18} />
+            {typeof favError === "string" ? favError : favError?.message || "Erreur lors de la mise à jour des favoris"}
           </div>
         )}
 
-        {!loadingServices && filteredServices.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredServices.map((service) => {
-              const isRequested = Boolean(requestedServices[service.id]);
+        <section>
+          <div className="mb-5 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Wrench size={15} className="text-emerald-600" />
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                  Catalogue
+                </span>
+              </div>
+              <h2 className="text-2xl font-black tracking-tight text-[#0d1f1a]">
+                Services disponibles
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Choisissez la prestation qui correspond à votre besoin.
+              </p>
+            </div>
 
-              const isFav = Array.isArray(favorites) && favorites.some(
-                (fav) => fav.id === service.id || fav.service_id === service.id || fav === service.id
-              );
+            <div className="relative w-full xl:w-[390px]">
+              <Search
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="text"
+                placeholder="Rechercher un service..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10"
+              />
+            </div>
+          </div>
 
+          <div className="mb-7 flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-bold transition ${
+                selectedCategory === null
+                  ? "border-[#0d1f1a] bg-[#0d1f1a] text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700"
+              }`}
+            >
+              <Grid size={14} />
+              Toutes
+            </button>
+
+            {categories && categories.map((cat) => {
+              const isSelected = Number(selectedCategory) === Number(cat.id);
               return (
-                <div
-                  key={service.id}
-                  className="group relative flex flex-col justify-between rounded-2xl bg-white border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-300"
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-bold transition ${
+                    isSelected
+                      ? "border-emerald-400 bg-emerald-400 text-[#0d1f1a]"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700"
+                  }`}
                 >
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="flex items-center gap-3.5">
-                        <div className="relative">
-                          <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg overflow-hidden shrink-0">
-                            {service.image && service.image !== "profile.jpg" ? (
-                              <img
-                                src={service.image}
-                                alt={service.name || service.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <span>{service.name ? service.name[0] : (service.title ? service.title[0] : 'T')}</span>
-                            )}
-                          </div>
-                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
-                        </div>
-
-                        <div>
-                          <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition">
-                            {service.name || "Technicien"}
-                          </h3>
-                          <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                            <span className="flex items-center gap-1">
-                              <Briefcase size={12} className="text-slate-400" />
-                              {service.experience || "N/A"}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Phone size={12} className="text-slate-400" />
-                              {service.phone || "Non renseigné"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        disabled={loadingFav}
-                        onClick={() => handleToggleFavorite(service.id)}
-                        className={`p-2 rounded-xl border transition-all duration-200 active:scale-90 shrink-0 ${
-                          isFav
-                            ? "bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100"
-                            : "bg-slate-50 border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50"
-                        }`}
-                      >
-                        <Heart 
-                          size={18} 
-                          className={isFav ? "fill-rose-500 text-rose-500" : ""} 
-                        />
-                      </button>
-                    </div>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
-                          {service.title}
-                        </span>
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                          <Tag size={12} /> Cat #{service.category_id}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
-                        {service.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-100 space-y-4">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-xs text-slate-500 font-medium">Tarif estimé</span>
-                      <div className="text-right">
-                        <span className="text-xl font-extrabold text-slate-900">
-                          {service.price ? parseFloat(service.price).toLocaleString() : '0'}
-                        </span>
-                        <span className="text-xs font-bold text-blue-600 ml-1">DH</span>
-                      </div>
-                    </div>
-
-                    {isRequested ? (
-                      <button
-                        onClick={() => handleCancelRequest(service.id)}
-                        disabled={submitting}
-                        className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold py-2.5 px-4 rounded-xl transition-all duration-200 active:scale-[0.98] disabled:opacity-50 text-xs"
-                      >
-                        <XCircle size={16} />
-                        <span>Annuler la demande</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleOpenModal(service.id)}
-                        disabled={submitting}
-                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50 text-xs"
-                      >
-                        <Send size={16} />
-                        <span>Demander le service</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
+                  <Tag size={13} />
+                  {cat.name || cat.title || `Catégorie #${cat.id}`}
+                </button>
               );
             })}
           </div>
-        )}
-      </div>
 
-      {/* MODAL FORM DEMANDE */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 w-full max-w-md shadow-xl relative space-y-5">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Send size={18} className="text-blue-600" />
-                Demander une intervention
-              </h3>
-              <button
-                onClick={handleCloseModal}
-                disabled={submitting}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition disabled:opacity-50"
-              >
-                <X size={20} />
-              </button>
+          {loadingServices && (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div
+                  key={n}
+                  className="h-[330px] animate-pulse rounded-[28px] border border-slate-200 bg-white p-6"
+                >
+                  <div className="mb-6 flex gap-3">
+                    <div className="h-12 w-12 rounded-2xl bg-slate-100" />
+                    <div className="flex-1 space-y-2 pt-1">
+                      <div className="h-4 w-1/2 rounded bg-slate-100" />
+                      <div className="h-3 w-1/3 rounded bg-slate-100" />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-4 rounded bg-slate-100" />
+                    <div className="h-4 w-4/5 rounded bg-slate-100" />
+                  </div>
+                </div>
+              ))}
             </div>
+          )}
 
-            {apiError && (
-              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                <AlertCircle size={16} className="shrink-0 text-red-600" />
-                <span>{apiError}</span>
+          {!loadingServices && filteredServices.length === 0 && (
+            <div className="rounded-[30px] border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                <AlertCircle size={24} />
               </div>
-            )}
+              <h3 className="mt-4 text-base font-black text-slate-900">Aucun service trouvé</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Modifiez votre recherche ou sélectionnez une autre catégorie.
+              </p>
+            </div>
+          )}
 
-            {successMessage && (
-              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
-                <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
-                <span>{successMessage}</span>
+          {!loadingServices && filteredServices.length > 0 && (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {filteredServices.map((service, index) => {
+                const isRequested = Boolean(requestedServices[service.id]);
+                const isFav = Array.isArray(favorites) && favorites.some(
+                  (fav) => fav.id === service.id || fav.service_id === service.id || fav === service.id
+                );
+
+                return (
+                  <article
+                    key={service.id}
+                    className="group relative overflow-hidden rounded-[30px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.05)] transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_20px_50px_rgba(15,23,42,0.09)]"
+                  >
+                    <span className="pointer-events-none absolute -right-2 top-14 text-[88px] font-black leading-none text-slate-50">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
+                    <div className="relative">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="relative shrink-0">
+                            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-[#0d1f1a] text-lg font-black text-emerald-300">
+                              {service.image && service.image !== "profile.jpg" ? (
+                                <img
+                                  src={service.image}
+                                  alt={service.name || service.title}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <span>{service.name?.[0] || service.title?.[0] || "T"}</span>
+                              )}
+                            </div>
+                            <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-[3px] border-white bg-emerald-400" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <h3 className="truncate text-base font-black text-[#0d1f1a]">
+                              {service.name || "Technicien"}
+                            </h3>
+                            <div className="mt-1 flex items-center gap-2 text-[11px] font-medium text-slate-500">
+                              <span className="flex items-center gap-1">
+                                <Briefcase size={12} />
+                                {service.experience || "N/A"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={loadingFav}
+                          onClick={() => handleToggleFavorite(service.id)}
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border transition active:scale-90 ${
+                            isFav
+                              ? "border-rose-200 bg-rose-50 text-rose-500"
+                              : "border-slate-200 bg-white text-slate-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
+                          }`}
+                        >
+                          <Heart
+                            size={17}
+                            className={isFav ? "fill-rose-500 text-rose-500" : ""}
+                          />
+                        </button>
+                      </div>
+
+                      <div className="mt-6">
+                        <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700">
+                          {service.title}
+                        </span>
+
+                        <p className="mt-3 min-h-[44px] line-clamp-2 text-sm leading-6 text-slate-600">
+                          {service.description}
+                        </p>
+                      </div>
+
+                      <div className="mt-5 flex items-center gap-2 rounded-2xl bg-[#f7f9f8] px-3.5 py-3 text-xs text-slate-500">
+                        <Phone size={14} className="text-emerald-600" />
+                        <span className="font-semibold text-slate-700">
+                          {service.phone || "Téléphone non renseigné"}
+                        </span>
+                      </div>
+
+                      <div className="mt-5 flex items-end justify-between border-t border-slate-100 pt-5">
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+                            Tarif estimé
+                          </p>
+                          <div className="mt-1 flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-[#0d1f1a]">
+                              {service.price ? parseFloat(service.price).toLocaleString() : "0"}
+                            </span>
+                            <span className="text-xs font-black text-emerald-600">DH</span>
+                          </div>
+                        </div>
+
+                        {isRequested ? (
+                          <button
+                            onClick={() => handleCancelRequest(service.id)}
+                            disabled={submitting}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 text-xs font-black text-rose-600 transition hover:bg-rose-100 disabled:opacity-50"
+                          >
+                            <XCircle size={15} />
+                            Annuler
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleOpenModal(service.id)}
+                            disabled={submitting}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#0d1f1a] px-4 text-xs font-black text-white transition hover:bg-[#143128] disabled:opacity-50"
+                          >
+                            <Send size={15} className="text-emerald-400" />
+                            Demander
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07110e]/70 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-lg overflow-hidden rounded-[30px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)]">
+              <div className="relative overflow-hidden bg-[#0d1f1a] px-6 py-6">
+                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-400/10" />
+                <div className="relative flex items-start justify-between gap-4">
+                  <div>
+                    <div className="mb-2 flex items-center gap-2 text-emerald-400">
+                      <Send size={15} />
+                      <span className="text-[9px] font-black uppercase tracking-[0.18em]">
+                        Nouvelle demande
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-black text-white">
+                      Demander une intervention
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Décrivez votre besoin et choisissez la date souhaitée.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleCloseModal}
+                    disabled={submitting}
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-slate-300 transition hover:bg-white/15 hover:text-white"
+                  >
+                    <X size={17} />
+                  </button>
+                </div>
               </div>
-            )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <FileText size={14} className="text-blue-600" />
-                  Description du besoin
-                </label>
-                <textarea
-                  required
-                  rows={4}
-                  disabled={submitting || successMessage}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Expliquez en détails le problème ou l'intervention souhaitée..."
-                  className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-xl p-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition resize-none disabled:opacity-50 shadow-sm"
-                />
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-5 p-6">
+                {apiError && (
+                  <div className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+                    <AlertCircle size={16} />
+                    {apiError}
+                  </div>
+                )}
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Calendar size={14} className="text-blue-600" />
-                  Date d'intervention souhaitée
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  disabled={submitting || successMessage}
-                  value={formData.scheduled_date}
-                  onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-xl p-3 text-sm text-slate-800 outline-none transition disabled:opacity-50 shadow-sm"
-                />
-              </div>
+                {successMessage && (
+                  <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-700">
+                    <CheckCircle2 size={16} />
+                    {successMessage}
+                  </div>
+                )}
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  disabled={submitting}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition disabled:opacity-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting || successMessage}
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition active:scale-95 disabled:opacity-50 flex items-center gap-2"
-                >
-                  {submitting && <RefreshCw size={14} className="animate-spin" />}
-                  <span>{submitting ? "Envoi en cours..." : "Confirmer la demande"}</span>
-                </button>
-              </div>
-            </form>
+                <div>
+                  <label className="mb-2 flex items-center gap-2 text-xs font-black text-slate-700">
+                    <FileText size={14} className="text-emerald-600" />
+                    Description du besoin
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    disabled={submitting || successMessage}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Expliquez le problème ou l'intervention souhaitée..."
+                    className="w-full resize-none rounded-2xl border border-slate-200 bg-[#f7f9f8] p-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
+                  />
+                </div>
 
+                <div>
+                  <label className="mb-2 flex items-center gap-2 text-xs font-black text-slate-700">
+                    <Calendar size={14} className="text-emerald-600" />
+                    Date d'intervention souhaitée
+                  </label>
+                  <input
+                    type="datetime-local"
+                    required
+                    disabled={submitting || successMessage}
+                    value={formData.scheduled_date}
+                    onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
+                    className="h-12 w-full rounded-2xl border border-slate-200 bg-[#f7f9f8] px-4 text-sm text-slate-800 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    disabled={submitting}
+                    className="h-11 rounded-2xl px-5 text-xs font-black text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                  >
+                    Annuler
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={submitting || successMessage}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-5 text-xs font-black text-[#0d1f1a] transition hover:bg-emerald-300 disabled:opacity-50"
+                  >
+                    {submitting && <RefreshCw size={14} className="animate-spin" />}
+                    {submitting ? "Envoi en cours..." : "Confirmer la demande"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
     </div>
   );
 }

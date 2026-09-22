@@ -1,32 +1,47 @@
+
 import React, { useEffect, useState } from "react";
 import { usecategory } from "../../hooks/usecategory";
 import { useservice } from "../../hooks/useservice";
 
-import { 
-  Plus, 
-  Wrench, 
-  Briefcase, 
-  Tag, 
-  AlertCircle, 
-  RotateCw, 
+import {
+  Plus,
+  Wrench,
+  Briefcase,
+  Tag,
+  AlertCircle,
+  RotateCw,
   X,
   Search,
-  TrendingUp
+  TrendingUp,
+  ArrowUpRight,
+  Sparkles,
+  Activity,
+  Layers3,
+  Star,
+  ChevronRight
 } from "lucide-react";
 
 export default function TechnicienDashboard() {
   const { services, loading, fetchServices, addService, messervices } = useservice();
-  const { categories, loading: categoriesLoading, fetchCategories } = usecategory();
+  const {
+    categories,
+    loading: categoriesLoading,
+    fetchCategories
+  } = usecategory();
+  useEffect(() => {
+    console.log("categories:", categories);
+  }, [categories]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Form State
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     price: "",
     category_id: ""
   });
+
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -44,16 +59,26 @@ export default function TechnicienDashboard() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setSubmitting(true);
     setFormError("");
 
     try {
       await addService(formData);
-      setFormData({ title: "", description: "", price: "", category_id: "" });
+
+      setFormData({
+        title: "",
+        description: "",
+        price: "",
+        category_id: ""
+      });
+
       setIsModalOpen(false);
       messervices();
     } catch (err) {
-      setFormError("Erreur lors de l'ajout du service. Vérifiez vos données.");
+      setFormError(
+        "Erreur lors de l'ajout du service. Vérifiez vos données."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -63,257 +88,582 @@ export default function TechnicienDashboard() {
     ? categories
     : categories?.data || categories?.categories || [];
 
-  const filteredServices = services?.filter(s => 
-    s.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredServices =
+    services?.filter(
+      (s) =>
+        s.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#f5f7f6] text-slate-900">
 
-        {/* TOP BAR / HEADER */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dashboard Technicien</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-              Gestion des Prestations
-            </h1>
-          </div>
+      <div className="mx-auto max-w-[1500px] p-4 sm:p-6 lg:p-8">
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={messervices}
-              disabled={loading}
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/80 transition active:scale-95 disabled:opacity-50"
-              title="Rafraîchir"
-            >
-              <RotateCw size={18} className={loading ? "animate-spin text-blue-600" : ""} />
-            </button>
+        {/* HERO */}
+        <section className="relative overflow-hidden rounded-[32px] bg-[#0d1f1a] px-6 py-7 sm:px-8 lg:px-10 lg:py-9">
 
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm hover:shadow transition active:scale-95 text-sm"
-            >
-              <Plus size={18} />
-              <span>Nouveau Service</span>
-            </button>
-          </div>
-        </div>
+          {/* Decorative elements */}
+          <div className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-[-150px] left-[35%] h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
 
-        {/* METRICS / STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs text-slate-500 font-medium">Services Actifs</p>
-              <p className="text-3xl font-bold text-slate-900">{services ? services.length : 0}</p>
-            </div>
-            <div className="p-3 bg-blue-50 border border-blue-100 text-blue-600 rounded-xl">
-              <Wrench size={22} />
-            </div>
-          </div>
+          <div className="relative z-10 flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
 
-          <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs text-slate-500 font-medium">Demandes Reçues</p>
-              <p className="text-3xl font-bold text-emerald-600">12</p>
-            </div>
-            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl">
-              <TrendingUp size={22} />
-            </div>
-          </div>
+            <div className="max-w-2xl">
 
-          <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-xs text-slate-500 font-medium">Évaluation</p>
-              <p className="text-3xl font-bold text-amber-500">4.9 <span className="text-xs font-normal text-slate-400">/ 5</span></p>
-            </div>
-            <div className="p-3 bg-amber-50 border border-amber-100 text-amber-600 rounded-xl">
-              <Briefcase size={22} />
-            </div>
-          </div>
-        </div>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
 
-        {/* MAIN CONTENT AREA */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-          
-          {/* Controls: Search & Filters */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <input
-                type="text"
-                placeholder="Rechercher un service..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 text-sm text-slate-800 pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition placeholder:text-slate-400"
-              />
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-100/70">
+                  Espace Technicien
+                </span>
+              </div>
+
+              <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
+                Gérez vos services
+                <span className="block text-emerald-400">
+                  simplement.
+                </span>
+              </h1>
+
+              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+                Centralisez vos prestations, suivez votre activité et
+                développez votre présence depuis un seul espace.
+              </p>
             </div>
 
-            <div className="text-xs text-slate-500 font-medium self-end sm:self-center">
-              Affichage de <span className="text-slate-900 font-bold">{filteredServices.length}</span> prestation(s)
-            </div>
-          </div>
+            <div className="flex flex-wrap gap-3">
 
-          {/* Service Cards / Table */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="h-44 bg-slate-100 rounded-xl animate-pulse border border-slate-200" />
-              ))}
-            </div>
-          ) : filteredServices.length === 0 ? (
-            <div className="text-center py-16 space-y-3">
-              <AlertCircle size={36} className="mx-auto text-slate-400" />
-              <p className="text-slate-600 text-sm font-medium">Aucun service trouvé</p>
+              <button
+                onClick={messervices}
+                disabled={loading}
+                className="group flex h-12 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm font-semibold text-white transition-all hover:bg-white/10 disabled:opacity-50"
+              >
+                <RotateCw
+                  size={17}
+                  className={
+                    loading
+                      ? "animate-spin text-emerald-400"
+                      : "transition-transform group-hover:rotate-45"
+                  }
+                />
+
+                Actualiser
+              </button>
+
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="text-xs text-blue-600 hover:text-blue-700 font-semibold inline-flex items-center gap-1 transition"
+                className="flex h-12 items-center gap-2 rounded-2xl bg-emerald-400 px-5 text-sm font-black text-[#0d1f1a] shadow-lg shadow-emerald-950/30 transition-all hover:-translate-y-0.5 hover:bg-emerald-300"
               >
-                <Plus size={14} /> Créer une prestation
+                <Plus size={18} strokeWidth={3} />
+                Nouveau service
               </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredServices.map((service) => (
-                <div
-                  key={service.id}
-                  className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 hover:shadow-md transition flex flex-col justify-between space-y-4 group"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition line-clamp-1">
-                        {service.title}
-                      </h3>
-                      <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60 font-medium flex items-center gap-1 shrink-0">
-                        <Tag size={10} /> #{service.category_id}
-                      </span>
-                    </div>
-                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-3">
-                      {service.description}
-                    </p>
-                  </div>
 
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <div className="text-xs text-slate-400 font-medium">Tarif fixe</div>
-                    <div className="text-base font-bold text-slate-900">
-                      {service.price ? parseFloat(service.price).toLocaleString() : '0'} <span className="text-xs font-semibold text-blue-600">DH</span>
-                    </div>
-                  </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* STATS */}
+        <section className="relative z-20 -mt-1 grid grid-cols-1 gap-4 px-0 pt-5 md:grid-cols-3">
+
+          {/* Main stat */}
+          <div className="group relative overflow-hidden rounded-[26px] border border-slate-200/80 bg-white p-6 shadow-[0_10px_40px_rgba(15,23,42,0.04)]">
+
+            <div className="flex items-start justify-between">
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Services actifs
+                </p>
+
+                <div className="mt-3 flex items-end gap-2">
+                  <h2 className="text-4xl font-black tracking-tight text-slate-900">
+                    {services ? services.length : 0}
+                  </h2>
+
+                  <span className="mb-1.5 text-xs font-semibold text-slate-400">
+                    prestations
+                  </span>
                 </div>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 transition-transform group-hover:rotate-6 group-hover:scale-105">
+                <Wrench size={21} />
+              </div>
+
+            </div>
+
+            <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-emerald-600">
+              <Activity size={14} />
+              Activité disponible
+            </div>
+
+          </div>
+
+          {/* Requests */}
+          <div className="group relative overflow-hidden rounded-[26px] border border-slate-200/80 bg-white p-6 shadow-[0_10px_40px_rgba(15,23,42,0.04)]">
+
+            <div className="flex items-start justify-between">
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Demandes reçues
+                </p>
+
+                <div className="mt-3 flex items-end gap-2">
+                  <h2 className="text-4xl font-black tracking-tight text-slate-900">
+                    12
+                  </h2>
+
+                  <span className="mb-1.5 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600">
+                    +18%
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white transition-transform group-hover:-rotate-6 group-hover:scale-105">
+                <TrendingUp size={21} />
+              </div>
+
+            </div>
+
+            <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full w-[72%] rounded-full bg-emerald-400" />
+            </div>
+
+          </div>
+
+          {/* Rating */}
+          <div className="group relative overflow-hidden rounded-[26px] bg-emerald-400 p-6 shadow-[0_10px_40px_rgba(16,185,129,0.15)]">
+
+            <div className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full border-[20px] border-white/10" />
+
+            <div className="relative flex items-start justify-between">
+
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-emerald-950/60">
+                  Évaluation
+                </p>
+
+                <div className="mt-3 flex items-end gap-2">
+                  <h2 className="text-4xl font-black tracking-tight text-[#0d1f1a]">
+                    4.9
+                  </h2>
+
+                  <span className="mb-1.5 text-xs font-black text-emerald-950/50">
+                    / 5
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300">
+                <Star size={21} fill="currentColor" />
+              </div>
+
+            </div>
+
+            <div className="relative mt-6 flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={14}
+                  className="text-emerald-950"
+                  fill="currentColor"
+                />
               ))}
             </div>
+
+          </div>
+
+        </section>
+
+        {/* SERVICES */}
+        <section className="mt-8">
+
+          {/* Section header */}
+          <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Layers3 size={16} className="text-emerald-600" />
+
+                <span className="text-xs font-black uppercase tracking-[0.16em] text-emerald-600">
+                  Catalogue
+                </span>
+              </div>
+
+              <h2 className="text-2xl font-black tracking-tight text-slate-900">
+                Mes prestations
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Retrouvez et gérez l'ensemble de vos services.
+              </p>
+            </div>
+
+            <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
+
+              {/* Search */}
+              <div className="relative w-full sm:w-[330px]">
+                <Search
+                  size={17}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Rechercher une prestation..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10"
+                />
+              </div>
+
+              <div className="flex h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-500 shadow-sm">
+                <span className="mr-1 text-slate-900">
+                  {filteredServices.length}
+                </span>
+                résultat(s)
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Loading */}
+          {loading ? (
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div
+                  key={n}
+                  className="h-[250px] animate-pulse rounded-[28px] border border-slate-200 bg-white p-6"
+                >
+                  <div className="h-12 w-12 rounded-2xl bg-slate-100" />
+                  <div className="mt-6 h-4 w-1/2 rounded bg-slate-100" />
+                  <div className="mt-3 h-3 w-full rounded bg-slate-100" />
+                  <div className="mt-2 h-3 w-2/3 rounded bg-slate-100" />
+                </div>
+              ))}
+
+            </div>
+
+          ) : filteredServices.length === 0 ? (
+
+            /* Empty */
+            <div className="relative overflow-hidden rounded-[32px] border border-dashed border-slate-300 bg-white px-6 py-20 text-center">
+
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-emerald-50 text-emerald-600">
+                <AlertCircle size={27} />
+              </div>
+
+              <h3 className="mt-5 text-lg font-black text-slate-900">
+                Aucun service trouvé
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                Vous n'avez aucune prestation correspondant à votre recherche.
+              </p>
+
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#0d1f1a] px-5 py-3 text-xs font-bold text-white transition hover:bg-emerald-600"
+              >
+                <Plus size={16} />
+                Créer une prestation
+              </button>
+
+            </div>
+
+          ) : (
+
+            /* Service cards */
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+
+              {filteredServices.map((service, index) => (
+
+                <article
+                  key={service.id}
+                  className="group relative flex min-h-[260px] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)]"
+                >
+
+                  {/* Top */}
+                  <div className="flex items-start justify-between">
+
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300 transition-all duration-300 group-hover:rotate-3 group-hover:bg-emerald-400 group-hover:text-[#0d1f1a]">
+                      <Wrench size={20} />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      <Tag size={11} />
+                      Cat. {service.category_id}
+                    </div>
+
+                  </div>
+
+                  {/* Content */}
+                  <div className="mt-6 flex-1">
+
+                    <h3 className="text-lg font-black tracking-tight text-slate-900 transition-colors group-hover:text-emerald-700">
+                      {service.title}
+                    </h3>
+
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+                      {service.description}
+                    </p>
+
+                  </div>
+
+                  {/* Bottom */}
+                  <div className="mt-6 flex items-end justify-between border-t border-slate-100 pt-5">
+
+                    <div>
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Tarif
+                      </p>
+
+                      <div className="flex items-baseline gap-1">
+
+                        <span className="text-2xl font-black tracking-tight text-slate-900">
+                          {service.price
+                            ? parseFloat(service.price).toLocaleString()
+                            : "0"}
+                        </span>
+
+                        <span className="text-xs font-black text-emerald-600">
+                          DH
+                        </span>
+
+                      </div>
+                    </div>
+
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition-all group-hover:border-emerald-400 group-hover:bg-emerald-400 group-hover:text-[#0d1f1a]">
+                      <ArrowUpRight size={17} />
+                    </div>
+
+                  </div>
+
+                  {/* Card number */}
+                  <span className="pointer-events-none absolute right-5 top-[76px] text-[70px] font-black leading-none text-slate-50 transition-colors group-hover:text-emerald-50/70">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+
+                </article>
+
+              ))}
+
+            </div>
+
           )}
-        </div>
+
+        </section>
 
       </div>
 
-      {/* MODAL AJOUT SERVICE */}
+      {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border border-slate-200 w-full max-w-md rounded-2xl p-6 space-y-5 shadow-xl">
-            
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">Ajouter un service</h3>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-100"
-              >
-                <X size={18} />
-              </button>
+
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#07110e]/70 p-4 backdrop-blur-md">
+
+          <div className="relative w-full max-w-lg overflow-hidden rounded-[30px] border border-white/20 bg-white shadow-2xl">
+
+            {/* Modal header */}
+            <div className="relative overflow-hidden bg-[#0d1f1a] px-6 py-6">
+
+              <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-400/10 blur-2xl" />
+
+              <div className="relative flex items-start justify-between">
+
+                <div className="flex gap-4">
+
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400 text-[#0d1f1a]">
+                    <Sparkles size={20} />
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-400">
+                      Nouvelle prestation
+                    </p>
+
+                    <h3 className="mt-1 text-xl font-black text-white">
+                      Ajouter un service
+                    </h3>
+
+                    <p className="mt-1 text-xs text-slate-400">
+                      Complétez les informations ci-dessous.
+                    </p>
+                  </div>
+
+                </div>
+
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+                >
+                  <X size={18} />
+                </button>
+
+              </div>
+
             </div>
 
-            {formError && (
-              <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-xs flex items-center gap-2">
-                <AlertCircle size={14} className="shrink-0" />
-                <span>{formError}</span>
-              </div>
-            )}
+            <div className="p-6">
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Titre du service</label>
-                <input
-                  type="text"
-                  name="title"
-                  required
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Ex: Installation Électrique"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
-                />
-              </div>
+              {formError && (
 
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Catégorie</label>
-                <select
-                  name="category_id"
-                  required
-                  value={formData.category_id}
-                  onChange={handleChange}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition cursor-pointer"
-                >
-                  <option value="" disabled>Sélectionnez une catégorie</option>
-                  {categoriesList.map((cat) => {
-                    const id = cat.id || cat.id_category;
-                    const name = cat.name || cat.nom || cat.title || `Catégorie #${id}`;
-                    return <option key={id} value={id}>{name}</option>;
-                  })}
-                </select>
-              </div>
+                <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-xs font-medium text-red-600">
+                  <AlertCircle size={17} className="mt-0.5 shrink-0" />
+                  <span>{formError}</span>
+                </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Prix (DH)</label>
-                <input
-                  type="number"
-                  name="price"
-                  step="0.01"
-                  required
-                  value={formData.price}
-                  onChange={handleChange}
-                  placeholder="Ex: 300"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition"
-                />
-              </div>
+              )}
 
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Description</label>
-                <textarea
-                  name="description"
-                  rows={3}
-                  required
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Description du service..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition resize-none"
-                />
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-5">
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 transition"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-xs transition disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
-                >
-                  {submitting && <RotateCw size={12} className="animate-spin" />}
-                  <span>Enregistrer</span>
-                </button>
-              </div>
-            </form>
+                <div>
+
+                  <label className="mb-2 block text-xs font-bold text-slate-700">
+                    Titre du service
+                  </label>
+
+                  <input
+                    type="text"
+                    name="title"
+                    required
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="Ex: Installation électrique"
+                    className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
+                  />
+
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                  <div>
+
+                    <label className="mb-2 block text-xs font-bold text-slate-700">
+                      Catégorie
+                    </label>
+
+                    <select
+                      name="category_id"
+                      required
+                      value={formData.category_id}
+                      onChange={handleChange}
+                      className="h-12 w-full cursor-pointer rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
+                    >
+                      <option value="" disabled>
+                        Sélectionner
+                      </option>
+
+                      {categoriesList.map((cat) => {
+                        const id = cat.id || cat.id_category;
+
+                        const name =
+                          cat.name ||
+                          cat.nom ||
+                          cat.title ||
+                          `Catégorie #${id}`;
+
+                        return (
+                          <option key={id} value={id}>
+                            {name}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                  </div>
+
+                  <div>
+
+                    <label className="mb-2 block text-xs font-bold text-slate-700">
+                      Prix
+                    </label>
+
+                    <div className="relative">
+
+                      <input
+                        type="number"
+                        name="price"
+                        step="0.01"
+                        required
+                        value={formData.price}
+                        onChange={handleChange}
+                        placeholder="300"
+                        className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-14 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
+                      />
+
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-emerald-600">
+                        DH
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <div>
+
+                  <label className="mb-2 block text-xs font-bold text-slate-700">
+                    Description
+                  </label>
+
+                  <textarea
+                    name="description"
+                    rows={4}
+                    required
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Décrivez votre prestation..."
+                    className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
+                  />
+
+                </div>
+
+                <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="h-11 rounded-xl px-5 text-xs font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                  >
+                    Annuler
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex h-11 items-center gap-2 rounded-xl bg-[#0d1f1a] px-6 text-xs font-black text-white shadow-lg transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {submitting ? (
+                      <RotateCw size={15} className="animate-spin" />
+                    ) : (
+                      <Plus size={15} />
+                    )}
+
+                    {submitting ? "Enregistrement..." : "Créer le service"}
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
 
           </div>
+
         </div>
+
       )}
+
     </div>
   );
 }

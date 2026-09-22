@@ -1,107 +1,339 @@
-import React, { useState } from 'react';
-import { Menu, X, Bell, ChevronDown, LogOut, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
 
-export default function Navbar({ toggleSidebar, isSidebarOpen, user, logout }) {
-  const [profileDropdown, setProfileDropdown] = useState(false);
-  const [notifDropdown, setNotifDropdown] = useState(false);
+import {
+  Menu,
+  Bell,
+  ChevronDown,
+  LogOut,
+  User,
+  Wrench,
+  X,
+  CheckCircle2
+} from "lucide-react";
+
+import { Link } from "react-router-dom";
+
+export default function Navbar({
+  toggleSidebar,
+  isSidebarOpen,
+  user,
+  logout
+}) {
+  const [profileDropdown, setProfileDropdown] =
+    useState(false);
+
+  const [notifDropdown, setNotifDropdown] =
+    useState(false);
+
+  const initial =
+    user?.name?.[0]?.toUpperCase() || "U";
+
+  const roleLabel = {
+    technicien: "Technicien",
+    client: "Client",
+    admin: "Administrateur"
+  };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
-      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-        
-        {/* Left: Mobile Toggle & Brand */}
+    <header className="sticky top-0 z-30 h-[76px] border-b border-slate-200/70 bg-[#f5f7f6]/90 backdrop-blur-xl">
+
+      <div className="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8">
+
+        {/* LEFT */}
         <div className="flex items-center gap-3">
-          <button 
+
+          {/* MOBILE MENU */}
+          <button
             onClick={toggleSidebar}
-            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 lg:hidden transition"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 lg:hidden"
           >
-            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {isSidebarOpen ? (
+              <X size={19} />
+            ) : (
+              <Menu size={19} />
+            )}
           </button>
 
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-md shadow-blue-500/20">
+          {/* MOBILE LOGO */}
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 lg:hidden"
+          >
+
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0d1f1a] text-xs font-black text-emerald-400">
               iS
             </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">
-              In<span className="text-blue-600">Service</span>
+
+            <span className="hidden text-base font-black tracking-tight text-slate-900 sm:block">
+              In
+              <span className="text-emerald-600">
+                Service
+              </span>
             </span>
+
           </Link>
+
+          {/* DESKTOP PAGE INFO */}
+          <div className="hidden lg:block">
+
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-600">
+              InService Platform
+            </p>
+
+            <p className="mt-0.5 text-sm font-bold text-slate-700">
+              Bienvenue,{" "}
+              <span className="text-slate-950">
+                {user?.name || "Utilisateur"}
+              </span>
+            </p>
+
+          </div>
+
         </div>
 
-        {/* Right: Notifications & Profile */}
-        <div className="flex items-center gap-3">
-          
-          {/* Notifications */}
+        {/* RIGHT */}
+        <div className="flex items-center gap-2 sm:gap-3">
+
+          {/* ROLE */}
+          <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 md:flex">
+
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+
+            <span className="text-[10px] font-black uppercase tracking-wide text-emerald-700">
+              {roleLabel[user?.role] ||
+                user?.role ||
+                "Utilisateur"}
+            </span>
+
+          </div>
+
+          {/* NOTIFICATIONS */}
           <div className="relative">
-            <button 
+
+            <button
               onClick={() => {
                 setNotifDropdown(!notifDropdown);
                 setProfileDropdown(false);
               }}
-              className="relative p-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition border border-transparent"
+              className={`
+                relative flex h-10 w-10
+                items-center justify-center
+                rounded-xl border
+                transition-all
+
+                ${
+                  notifDropdown
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 bg-white text-slate-500 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                }
+              `}
             >
-              <Bell size={19} />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+              <Bell size={18} />
+
+              <span className="absolute right-[8px] top-[7px] h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+
             </button>
 
+            {/* NOTIFICATION DROPDOWN */}
             {notifDropdown && (
-              <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in duration-150">
-                <div className="px-4 py-2.5 border-b border-slate-100 text-xs font-bold text-slate-800">
-                  Notifications
+
+              <div className="absolute right-0 mt-3 w-[310px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.15)] sm:w-[350px]">
+
+                <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+
+                  <div>
+
+                    <p className="text-sm font-black text-slate-900">
+                      Notifications
+                    </p>
+
+                    <p className="mt-0.5 text-[10px] font-medium text-slate-400">
+                      Vos dernières activités
+                    </p>
+
+                  </div>
+
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                    <Bell size={14} />
+                  </div>
+
                 </div>
-                <div className="p-3.5 text-xs text-slate-600 hover:bg-slate-50 cursor-pointer transition">
-                  Nouvelle demande d'intervention reçue.
+
+                <div className="p-2">
+
+                  <div className="group flex cursor-pointer gap-3 rounded-2xl p-3 transition hover:bg-[#f5f7f6]">
+
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400 text-[#0d1f1a]">
+                      <Wrench size={16} />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+
+                      <div className="flex items-start justify-between gap-3">
+
+                        <p className="text-xs font-bold leading-5 text-slate-800">
+                          Nouvelle demande
+                        </p>
+
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+
+                      </div>
+
+                      <p className="mt-0.5 text-[11px] leading-4 text-slate-500">
+                        Nouvelle demande d'intervention reçue.
+                      </p>
+
+                      <p className="mt-2 text-[9px] font-bold uppercase tracking-wide text-emerald-600">
+                        Maintenant
+                      </p>
+
+                    </div>
+
+                  </div>
+
                 </div>
+
               </div>
+
             )}
+
           </div>
 
-          {/* User Profile */}
+          {/* PROFILE */}
           <div className="relative">
-            <button 
+
+            <button
               onClick={() => {
                 setProfileDropdown(!profileDropdown);
                 setNotifDropdown(false);
               }}
-              className="flex items-center gap-2.5 p-1.5 pl-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition"
+              className={`
+                flex h-11 items-center gap-2
+                rounded-2xl border
+                bg-white p-1.5 pr-2
+                transition-all
+
+                ${
+                  profileDropdown
+                    ? "border-emerald-200 shadow-sm"
+                    : "border-slate-200 hover:border-emerald-200"
+                }
+              `}
             >
-              <div className="w-7 h-7 rounded-md bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 font-bold text-xs">
-                {user?.name?.[0]?.toUpperCase() || 'U'}
+
+              {/* AVATAR */}
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0d1f1a] text-xs font-black text-emerald-300">
+                {initial}
               </div>
-              <span className="text-xs font-semibold hidden md:inline-block text-slate-800">
-                {user?.name || 'Utilisateur'}
-              </span>
-              <ChevronDown size={14} className="text-slate-500" />
+
+              <div className="hidden min-w-0 text-left sm:block">
+
+                <p className="max-w-[110px] truncate text-[11px] font-black leading-4 text-slate-800">
+                  {user?.name || "Utilisateur"}
+                </p>
+
+                <p className="text-[9px] font-bold capitalize leading-3 text-slate-400">
+                  {roleLabel[user?.role] ||
+                    user?.role}
+                </p>
+
+              </div>
+
+              <ChevronDown
+                size={14}
+                className={`text-slate-400 transition-transform duration-200 ${
+                  profileDropdown
+                    ? "rotate-180"
+                    : ""
+                }`}
+              />
+
             </button>
 
+            {/* PROFILE DROPDOWN */}
             {profileDropdown && (
-              <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white border border-slate-200 shadow-xl py-1 z-50 animate-in fade-in duration-150">
-                <div className="px-4 py-2.5 border-b border-slate-100">
-                  <p className="text-xs font-bold text-slate-900">{user?.name}</p>
-                  <p className="text-[10px] text-blue-600 capitalize font-medium">{user?.role}</p>
-                </div>
-                
-                <Link 
-                  to="/profile" 
-                  onClick={() => setProfileDropdown(false)}
-                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
-                >
-                  <User size={14} className="text-slate-500" /> Profil
-                </Link>
 
-                <button 
-                  onClick={logout}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 transition"
-                >
-                  <LogOut size={14} /> Déconnexion
-                </button>
+              <div className="absolute right-0 mt-3 w-[240px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.15)]">
+
+                {/* USER */}
+                <div className="bg-[#0d1f1a] p-4">
+
+                  <div className="flex items-center gap-3">
+
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-emerald-400 text-sm font-black text-[#0d1f1a]">
+                      {initial}
+                    </div>
+
+                    <div className="min-w-0">
+
+                      <p className="truncate text-sm font-black text-white">
+                        {user?.name ||
+                          "Utilisateur"}
+                      </p>
+
+                      <div className="mt-1 flex items-center gap-1.5">
+
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+
+                        <p className="text-[9px] font-black uppercase tracking-wide text-emerald-300">
+                          {roleLabel[user?.role] ||
+                            user?.role}
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                {/* ACTIONS */}
+                <div className="p-2">
+
+                  <Link
+                    to="/profile"
+                    onClick={() =>
+                      setProfileDropdown(false)
+                    }
+                    className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
+                  >
+
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition group-hover:bg-emerald-100 group-hover:text-emerald-700">
+                      <User size={14} />
+                    </div>
+
+                    Mon profil
+
+                  </Link>
+
+                  <div className="my-1 border-t border-slate-100" />
+
+                  <button
+                    onClick={logout}
+                    className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-bold text-red-500 transition hover:bg-red-50"
+                  >
+
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                      <LogOut size={14} />
+                    </div>
+
+                    Déconnexion
+
+                  </button>
+
+                </div>
+
               </div>
+
             )}
+
           </div>
 
         </div>
+
       </div>
+
     </header>
   );
 }

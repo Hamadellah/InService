@@ -17,12 +17,13 @@ Route::post('/login',[AuthController::class,'login']);
 Route::delete('/logout',[AuthController::class,'logout'])->middleware('auth:sanctum');
 Route::put('/completeProfile',[ProfileController::class,'completeProfile'])->middleware('auth:sanctum');
 Route::get('/user',[ProfileController::class,'getProfile'])->middleware('auth:sanctum');
+route::get('/categories',[CategoryController::class,'show'])->middleware('auth:sanctum');
 
 Route::middleware(['auth:sanctum','technicien'])->group(function(){
     Route::post('/addService',[ServiceController::class,'addService']);
     Route::put('/updateService/{id}',[ServiceController::class,'updateService']);
     Route::delete('/deleteService/{id}',[ServiceController::class,'deleteService']);
-    route::get('/categories',[CategoryController::class,'show']);
+    
     route::get('/servicesTechnicien',[ServiceController::class,'showServiceBytechnicien']);
     Route::get('/serviceRequests',[TechnicienController::class,'getserviceRequests']);
     Route::put('/updateServiceRequestStatus/{id}',[ServiceRequestController::class,'serviceRequestStatus']);
@@ -31,8 +32,7 @@ Route::middleware(['auth:sanctum','technicien'])->group(function(){
 
 });
 Route::middleware(['auth:sanctum','client'])->group(function(){
-        route::get('/categories',[CategoryController::class,'show']);
-
+    
     Route::post('/makeServiceRequest/{serviceId}',[ServiceRequestController::class,'makeServiceRequest']);
     Route::delete('/deleteServiceRequest/{serviceId}',[ServiceRequestController::class,'deleteServiceRequest']);
     Route::get('/clientServiceRequests',[ClientController::class,'getServiceRequests']);
