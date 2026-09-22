@@ -25,10 +25,10 @@ class ServiceController extends Controller
     }
     public function showService()
     {
-        $services = DB::select("select users.name ,users.image , users.phone , techniciens.experience, services.* 
-from services 
-INNER JOIN techniciens on techniciens.id = technicien_id
-INNER JOIN users on users.id = user_id");
+        $services = DB::select("select users.* , services.* FROM services
+INNER JOIN techniciens ON techniciens.id = services.technicien_id
+INNER JOIN users on users.id = techniciens.user_id
+WHERE techniciens.availability=1");
 
         return response()->json([
             'status' => 200,

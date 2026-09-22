@@ -29,7 +29,14 @@ class ServiceRequestService
         if(isset($technicien->availability) && $technicien->availability === false){
             return ['error' => "Le technicien associé à ce service n'est pas disponible pour le moment.", 'code' => 400];
         }
+        $serviceRequest = ServiceRequest::where('client_id', $client->id)
+            ->where('service_id', $serviceId)
+            ->where('status', 'pending')
+            ->first();
 
+        if ($serviceRequest) {
+            return ['error' => "Une demande de service pour ce service existe déjà.", 'code' => 400];
+        }
 
         $serviceRequest = ServiceRequest::create([
             'request_date'   => now(),

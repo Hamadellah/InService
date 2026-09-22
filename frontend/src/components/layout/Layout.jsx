@@ -9,7 +9,9 @@ export default function Layout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans relative overflow-x-hidden selection:bg-blue-600 selection:text-white">
+      
+      {/* Top Navbar */}
       <Navbar 
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
         isSidebarOpen={sidebarOpen}
@@ -17,18 +19,23 @@ export default function Layout() {
         logout={logout}
       />
 
-      <div className="flex flex-1">
+      {/* Main Body Area */}
+      <div className="flex flex-1 relative">
+        {/* Sidebar */}
         <Sidebar 
           isOpen={sidebarOpen} 
           setIsOpen={setSidebarOpen} 
           role={user?.role || 'client'} 
         />
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-          {/* Hna فين ghadin y-rendrew les pages (Client, Technicien, Admin) */}
-          <Outlet />
+        {/* Content View Area */}
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full transition-all duration-300">
+          <div className="animate-fade-in">
+            <Outlet />
+          </div>
         </main>
       </div>
+
     </div>
   );
 }

@@ -14,6 +14,10 @@ import MesService from "./pages/technicien/MesService";
 import Demandes from "./pages/technicien/Demandes";
 import Demandesc from "./pages/client/Demandesc";
 import MessageTechnicien from "./pages/technicien/MessageTechnicien";
+import Profile from "./pages/Profile";
+import Favorites from "./pages/client/Favorites";
+import ClientMessage from "./pages/client/ClientMessage";
+import Disponibilites from "./pages/technicien/Disponibilites";
 export const router = createBrowserRouter([
   // Public Routes (Bla Navbar/Sidebar dyal Dashboard)
   {
@@ -88,7 +92,39 @@ export const router = createBrowserRouter([
             <MessageTechnicien />
           </ProtectedRoute>
         ),
-      }
+      },
+      {
+        path:"/Profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path:"/client/Favorites",
+        element: (
+          <ProtectedRoute role="client">
+            <Favorites />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/client/ClientMessage",
+        element: (
+          <ProtectedRoute role="client">
+            <ClientMessage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/technicien/Disponibilites",
+        element: (
+          <ProtectedRoute role="technicien">
+            <Disponibilites />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 ]);

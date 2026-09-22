@@ -1,31 +1,32 @@
 import React, { useState } from 'react';
 import { Menu, X, Bell, ChevronDown, LogOut, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Navbar({ toggleSidebar, isSidebarOpen, user, logout }) {
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [notifDropdown, setNotifDropdown] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         
-        {/* Left: Mobile Menu Toggle & Brand */}
+        {/* Left: Mobile Toggle & Brand */}
         <div className="flex items-center gap-3">
           <button 
             onClick={toggleSidebar}
-            className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 lg:hidden"
+            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 lg:hidden transition"
           >
-            {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          <a href="/" className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-500/20">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-md shadow-blue-500/20">
               iS
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">
-              InService
+            <span className="text-xl font-bold text-slate-900 tracking-tight">
+              In<span className="text-blue-600">Service</span>
             </span>
-          </a>
+          </Link>
         </div>
 
         {/* Right: Notifications & Profile */}
@@ -34,50 +35,64 @@ export default function Navbar({ toggleSidebar, isSidebarOpen, user, logout }) {
           {/* Notifications */}
           <div className="relative">
             <button 
-              onClick={() => setNotifDropdown(!notifDropdown)}
-              className="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              onClick={() => {
+                setNotifDropdown(!notifDropdown);
+                setProfileDropdown(false);
+              }}
+              className="relative p-2.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition border border-transparent"
             >
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-cyan-500 ring-2 ring-slate-900"></span>
+              <Bell size={19} />
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
             </button>
 
             {notifDropdown && (
-              <div className="absolute right-0 mt-2 w-72 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl py-2 z-50">
-                <div className="px-4 py-2 border-b border-slate-800 font-semibold text-xs text-slate-300">
+              <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in duration-150">
+                <div className="px-4 py-2.5 border-b border-slate-100 text-xs font-bold text-slate-800">
                   Notifications
                 </div>
-                <div className="p-3 text-xs text-slate-400 hover:bg-slate-800/50 cursor-pointer">
+                <div className="p-3.5 text-xs text-slate-600 hover:bg-slate-50 cursor-pointer transition">
                   Nouvelle demande d'intervention reçue.
                 </div>
               </div>
             )}
           </div>
 
-          {/* User Menu */}
+          {/* User Profile */}
           <div className="relative">
             <button 
-              onClick={() => setProfileDropdown(!profileDropdown)}
-              className="flex items-center gap-2 p-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 transition"
+              onClick={() => {
+                setProfileDropdown(!profileDropdown);
+                setNotifDropdown(false);
+              }}
+              className="flex items-center gap-2.5 p-1.5 pl-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition"
             >
-              <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-sm">
-                {user?.name?.[0] || 'U'}
+              <div className="w-7 h-7 rounded-md bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-700 font-bold text-xs">
+                {user?.name?.[0]?.toUpperCase() || 'U'}
               </div>
-              <span className="text-sm font-medium hidden md:inline-block text-slate-200">{user?.name || 'Utilisateur'}</span>
-              <ChevronDown size={16} className="text-slate-400" />
+              <span className="text-xs font-semibold hidden md:inline-block text-slate-800">
+                {user?.name || 'Utilisateur'}
+              </span>
+              <ChevronDown size={14} className="text-slate-500" />
             </button>
 
             {profileDropdown && (
-              <div className="absolute right-0 mt-2 w-48 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl py-1 z-50">
-                <div className="px-4 py-2 border-b border-slate-800">
-                  <p className="text-xs font-semibold text-slate-200">{user?.name}</p>
-                  <p className="text-[11px] text-cyan-400 capitalize">{user?.role}</p>
+              <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white border border-slate-200 shadow-xl py-1 z-50 animate-in fade-in duration-150">
+                <div className="px-4 py-2.5 border-b border-slate-100">
+                  <p className="text-xs font-bold text-slate-900">{user?.name}</p>
+                  <p className="text-[10px] text-blue-600 capitalize font-medium">{user?.role}</p>
                 </div>
-                <a href="/profile" className="flex items-center gap-2 px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 transition">
-                  <User size={14} /> Profil
-                </a>
+                
+                <Link 
+                  to="/profile" 
+                  onClick={() => setProfileDropdown(false)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                >
+                  <User size={14} className="text-slate-500" /> Profil
+                </Link>
+
                 <button 
                   onClick={logout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-xs text-rose-400 hover:bg-slate-800 transition"
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 transition"
                 >
                   <LogOut size={14} /> Déconnexion
                 </button>

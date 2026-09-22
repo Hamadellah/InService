@@ -1,0 +1,8 @@
+$kind: http-request
+url: http://127.0.0.1:8000/api/favorite/4
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: 109|4xcyUcjQ29fzYHDisOuTGtqnqeata1tQGF0E4LNm3e6a3722
+order: 4503599156522915

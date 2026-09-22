@@ -1,5 +1,16 @@
 $kind: http-request
 name: New Request
-url: ""
-method: GET
+url: http://127.0.0.1:8000/api/sendMessage/3
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"message\":\"AZERTYUI\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: 108|KooXh3jKNUrvd0c3DYHuLDBsosqPJyPeYFwnwRNU5069ef84
 order: 4503598575868374

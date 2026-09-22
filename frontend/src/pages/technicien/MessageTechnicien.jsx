@@ -1,16 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useMessage } from '../../hooks/usemessage';
 import { 
-  MessageSquare, User, Send, Loader2, Search, ArrowLeft 
+  MessageSquare, User, Phone, MessageCircle, RotateCw, Search, Clock, MapPin, AlertCircle 
 } from 'lucide-react';
 
 export default function MessageTechnicien() {
-  // Extraction d-postMessages mn l-hook dyalak
-  const { messages, loading, postMessages, getMessages } = useMessage();
-  
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [replyText, setReplyText] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const { messages, loading, getMessages } = useMessage();
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -19,207 +14,180 @@ export default function MessageTechnicien() {
     }
   }, []);
 
-  const messagesList = Array.isArray(messages) ? messages : [];
+  const rawMessages = messages?.data || messages?.messages || messages;
+  const messagesList = Array.isArray(rawMessages) ? rawMessages : [];
 
-  // Groupement d-les messages par client (Sender)
-  const conversations = messagesList.reduce((acc, msg) => {
-    const userId = msg.sender_id || msg.user_id || msg.id;
-    if (!acc[userId]) {
-      acc[userId] = {
-        userId: userId,
-        userName: msg.sender_name || msg.user_name || msg.name || "Client",
-        userImage: msg.sender_image || msg.user_image || msg.image,
-        lastMessage: msg.message,
-        lastTime: msg.created_at,
-        messagesList: []
-      };
-    }
-    acc[userId].messagesList.push(msg);
-    return acc;
-  }, {});
+  const filteredMessages = messagesList.filter((msg) => {
+    const clientName = msg.sender_name || msg.sender?.name || "";
+    const city = msg.city || msg.sender_city || msg.sender?.city || "";
+    const query = searchTerm.toLowerCase();
 
-  const usersList = Object.values(conversations).filter(c => 
-    c.userName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    return (
+      clientName.toLowerCase().includes(query) ||
+      city.toLowerCase().includes(query)
+    );
+  });
 
-  // Envoi d-message mni kat-clicki 3la Send
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!replyText.trim() || !selectedUser) return;
-
-    setIsSending(true);
-    try {
-      // Appele l-hook postMessages(id, messageData)
-      const res = await postMessages(selectedUser.userId, { message: replyText });
-      
-      if (res) {
-        // Ajout d-message f-la liste locale bach i-afficha f-l-bka blabladi
-        selectedUser.messagesList.push({
-          id: res.id || Date.now(),
-          message: replyText,
-          sender_id: 'me',
-          created_at: new Date().toISOString()
-        });
-        setReplyText("");
-      }
-    } catch (err) {
-      console.error("Erreur d'envoi du message:", err);
-    } finally {
-      setIsSending(false);
-    }
+  const formatPhoneNumber = (phone) => {
+    if (!phone) return "";
+    return phone.replace(/[^0-9+]/g, '');
   };
 
-  if (loading && messagesList.length === 0) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-slate-400 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-        <p className="text-sm">Chargement de votre messagerie...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-2 sm:p-6 max-w-7xl mx-auto">
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl backdrop-blur-xl h-[80vh] flex overflow-hidden shadow-2xl">
-        
-        {/* Sidebar: Liste d-les clients */}
-        <div className={`w-full md:w-80 lg:w-96 border-r border-slate-800 flex flex-col ${selectedUser ? 'hidden md:flex' : 'flex'}`}>
-          <div className="p-4 border-b border-slate-800 space-y-3">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <MessageSquare className="text-cyan-400" size={22} />
-              Messages
-            </h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 text-slate-500" size={16} />
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+
+        {/* TOP BAR / HEADER */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Centre de Communication</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2">
+              <MessageSquare className="text-blue-600" size={28} />
+              Demandes & Messages Clients
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Consultez les messages reçus et contactez directement vos clients.
+            </p>
+          </div>
+
+          <button
+            onClick={getMessages}
+            disabled={loading}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/80 text-xs font-semibold transition active:scale-95 disabled:opacity-50 shrink-0"
+          >
+            <RotateCw size={16} className={loading ? "animate-spin text-blue-600" : ""} />
+            <span>Actualiser</span>
+          </button>
+        </div>
+
+        {/* MAIN CONTENT CONTAINER */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+
+          {/* SEARCH & FILTER BAR */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input
                 type="text"
-                placeholder="Rechercher un client..."
+                placeholder="Rechercher par client ou ville..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                className="w-full bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition placeholder:text-slate-400"
               />
+            </div>
+
+            <div className="text-xs text-slate-500 font-medium self-end sm:self-center">
+              Total: <span className="text-slate-900 font-bold">{filteredMessages.length}</span> message(s)
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-800/40">
-            {usersList.length === 0 ? (
-              <div className="p-6 text-center text-slate-500 text-xs">
-                Aucun message trouvé.
-              </div>
-            ) : (
-              usersList.map((chat) => {
-                const isSelected = selectedUser?.userId === chat.userId;
+          {/* LOADING STATE */}
+          {loading && messagesList.length === 0 && (
+            <div className="py-20 text-center space-y-3">
+              <RotateCw className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
+              <p className="text-xs text-slate-500 font-medium">Chargement des messages clients...</p>
+            </div>
+          )}
+
+          {/* EMPTY STATE */}
+          {!loading && filteredMessages.length === 0 && (
+            <div className="text-center py-16 space-y-3">
+              <AlertCircle size={36} className="mx-auto text-slate-400" />
+              <h3 className="text-sm font-medium text-slate-700">Aucun message trouvé</h3>
+              <p className="text-xs text-slate-400">Vous n'avez actuellement aucun message client correspondant.</p>
+            </div>
+          )}
+
+          {/* MESSAGES GRID */}
+          {!loading && filteredMessages.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {filteredMessages.map((msg, index) => {
+                const clientName = msg.sender_name || msg.sender?.name || "Client";
+                const clientPhone = msg.sender_phone || msg.sender?.phone || "0600000000";
+                const cleanPhone = formatPhoneNumber(clientPhone);
+                const clientImage = msg.sender_image || msg.sender?.avatar;
+                const clientCity = msg.sender_city || msg.city || "Non spécifié";
+                const messageText = msg.message || msg.content || msg.text || "Aucun contenu";
+                
+                let messageTime = "Récemment";
+                if (msg.created_at) {
+                  const date = new Date(msg.created_at);
+                  if (!isNaN(date.getTime())) {
+                    messageTime = date.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+                  }
+                }
+
                 return (
                   <div
-                    key={chat.userId}
-                    onClick={() => setSelectedUser(chat)}
-                    className={`p-3.5 flex items-center gap-3 cursor-pointer transition ${
-                      isSelected 
-                        ? 'bg-cyan-500/10 border-l-4 border-cyan-400' 
-                        : 'hover:bg-slate-800/50'
-                    }`}
+                    key={msg.id || index}
+                    className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 hover:shadow-md transition flex flex-col justify-between space-y-4"
                   >
-                    {chat.userImage ? (
-                      <img src={chat.userImage} alt="" className="w-11 h-11 rounded-full object-cover border border-slate-700" />
-                    ) : (
-                      <div className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center text-cyan-400 border border-slate-700 shrink-0">
-                        <User size={20} />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="text-sm font-semibold text-white truncate">{chat.userName}</h4>
-                        <span className="text-[10px] text-slate-500">
-                          {chat.lastTime ? new Date(chat.lastTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                    <div>
+                      {/* CLIENT HEADER */}
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-3">
+                          {clientImage ? (
+                            <img
+                              src={clientImage}
+                              alt={clientName}
+                              className="w-11 h-11 rounded-full object-cover border border-slate-200"
+                            />
+                          ) : (
+                            <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+                              <User size={20} />
+                            </div>
+                          )}
+
+                          <div>
+                            <h3 className="font-bold text-slate-900 text-sm">{clientName}</h3>
+                            <div className="flex items-center gap-1 text-xs text-slate-500 mt-0.5">
+                              <MapPin size={12} className="text-slate-400" />
+                              <span>{clientCity}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <span className="text-[11px] text-slate-400 flex items-center gap-1 shrink-0 font-medium">
+                          <Clock size={11} />
+                          {messageTime}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 truncate">{chat.lastMessage}</p>
+
+                      {/* MESSAGE TEXT */}
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        {messageText}
+                      </div>
+                    </div>
+
+                    {/* ACTIONS (WHATSAPP & PHONE) */}
+                    <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                      <a
+                        href={`https://wa.me/${cleanPhone}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 hover:bg-emerald-100/80 text-xs font-semibold transition"
+                      >
+                        <MessageCircle size={15} className="shrink-0 text-emerald-600" />
+                        <span>WhatsApp : <strong>{clientPhone}</strong></span>
+                      </a>
+
+                      <a
+                        href={`tel:${cleanPhone}`}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-700 hover:bg-blue-100/80 text-xs font-semibold transition"
+                      >
+                        <Phone size={15} className="shrink-0 text-blue-600" />
+                        <span>Appeler : <strong>{clientPhone}</strong></span>
+                      </a>
                     </div>
                   </div>
                 );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Zone Chat Window */}
-        <div className={`flex-1 flex flex-col ${!selectedUser ? 'hidden md:flex' : 'flex'}`}>
-          {selectedUser ? (
-            <>
-              {/* Header Chat */}
-              <div className="p-4 border-b border-slate-800 bg-slate-950/40 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => setSelectedUser(null)}
-                    className="md:hidden text-slate-400 hover:text-white p-1"
-                  >
-                    <ArrowLeft size={20} />
-                  </button>
-                  {selectedUser.userImage ? (
-                    <img src={selectedUser.userImage} alt="" className="w-10 h-10 rounded-full object-cover border border-cyan-500/30" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-cyan-400 border border-slate-700">
-                      <User size={18} />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-white text-sm">{selectedUser.userName}</h3>
-                    <p className="text-[11px] text-cyan-400">Discussion active</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Discussion Body */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-950/20">
-                {selectedUser.messagesList.map((m, idx) => {
-                  const isMe = m.sender_id === 'me';
-                  return (
-                    <div 
-                      key={idx} 
-                      className={`flex flex-col space-y-1 ${isMe ? 'items-end' : 'items-start'}`}
-                    >
-                      <div className={`max-w-[75%] p-3 rounded-2xl text-xs sm:text-sm ${
-                        isMe 
-                          ? 'bg-cyan-600 text-white rounded-tr-none' 
-                          : 'bg-slate-800/90 text-slate-200 border border-slate-700/60 rounded-tl-none'
-                      }`}>
-                        {m.message}
-                      </div>
-                      <span className="text-[10px] text-slate-500 px-1">
-                        {m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Formulaire d-l-envoi */}
-              <form onSubmit={handleSend} className="p-3 border-t border-slate-800 bg-slate-950/60 flex items-center gap-2">
-                <input
-                  type="text"
-                  required
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Écrivez votre réponse..."
-                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
-                />
-                <button
-                  type="submit"
-                  disabled={isSending || !replyText.trim()}
-                  className="p-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl transition active:scale-95 disabled:opacity-50"
-                >
-                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                </button>
-              </form>
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500 space-y-3">
-              <div className="p-4 bg-slate-800/40 rounded-full border border-slate-800 text-cyan-400">
-                <MessageSquare size={32} />
-              </div>
-              <p className="text-sm">Sélectionnez un client pour voir la conversation.</p>
+              })}
             </div>
           )}
+
         </div>
 
       </div>
