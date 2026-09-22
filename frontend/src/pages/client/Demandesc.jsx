@@ -88,21 +88,22 @@ export default function Demandesc() {
 
   const getStatusBadge = (status) => {
     const s = status?.toLowerCase();
+
     switch (s) {
       case "in_progress":
       case "in-progress":
       case "accepted":
       case "accepté":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-700">
-            <PlayCircle size={13} className="text-blue-600" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <PlayCircle size={13} className="text-emerald-600" />
             En cours
           </span>
         );
       case "completed":
       case "terminé":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
             <CheckCircle2 size={13} className="text-emerald-600" />
             Terminée
           </span>
@@ -111,14 +112,14 @@ export default function Demandesc() {
       case "annulé":
       case "refused":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 border border-red-200 text-red-700">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
             <XCircle size={13} className="text-red-500" />
             Annulée
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Hourglass size={13} className="text-amber-500" />
             En attente
           </span>
@@ -126,242 +127,373 @@ export default function Demandesc() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* TOP BAR / HEADER */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="h-2.5 w-2.5 rounded-full bg-blue-600"></span>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Demandes d'Intervention</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
-              Mes Demandes
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Suivez l'état de vos demandes auprès des techniciens.
-            </p>
-          </div>
+  const pendingCount = demandesList.filter((item) => {
+    const status = item.status?.toLowerCase();
+    return !status || ["pending", "en_attente", "en attente"].includes(status);
+  }).length;
 
-          <div className="flex items-center gap-3 self-start md:self-center">
+  const progressCount = demandesList.filter((item) => {
+    const status = item.status?.toLowerCase();
+    return ["in_progress", "in-progress", "accepted", "accepté"].includes(status);
+  }).length;
+
+  const completedCount = demandesList.filter((item) => {
+    const status = item.status?.toLowerCase();
+    return ["completed", "terminé"].includes(status);
+  }).length;
+
+  return (
+    <div className="min-h-full bg-[#f5f7f6] p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-[1500px] space-y-7">
+        <section className="relative overflow-hidden rounded-[32px] bg-[#0d1f1a] px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+          <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 right-[30%] h-40 w-40 rounded-full bg-emerald-300/5 blur-2xl" />
+
+          <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-300">
+                  Espace Client
+                </span>
+              </div>
+
+              <h1 className="text-3xl font-black tracking-[-0.04em] text-white sm:text-4xl lg:text-5xl">
+                Suivez vos
+                <span className="block text-emerald-400">interventions.</span>
+              </h1>
+
+              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+                Retrouvez toutes vos demandes, consultez leur statut et contactez
+                facilement votre technicien lorsqu'une intervention est acceptée.
+              </p>
+            </div>
+
             <button
               onClick={() => getclientdemande()}
               disabled={loadingDemandes}
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/80 transition active:scale-95 disabled:opacity-50 flex items-center gap-2 text-xs font-semibold"
-              title="Rafraîchir"
+              className="inline-flex h-12 items-center justify-center gap-2 self-start rounded-2xl border border-white/10 bg-white/10 px-5 text-sm font-bold text-white transition hover:bg-white/15 disabled:opacity-50 lg:self-auto"
             >
-              <RotateCw size={16} className={loadingDemandes ? "animate-spin text-blue-600" : ""} />
-              <span>Actualiser</span>
+              <RotateCw
+                size={17}
+                className={loadingDemandes ? "animate-spin text-emerald-400" : "text-emerald-400"}
+              />
+              Actualiser
             </button>
-            <div className="bg-blue-50 border border-blue-100 px-3.5 py-2 rounded-xl text-xs font-semibold text-blue-700">
-              Total demandes: <span className="font-bold">{demandesList.length}</span>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+          <div className="rounded-[26px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                  Total demandes
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#0d1f1a]">{demandesList.length}</p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <Calendar size={20} />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* LOADING SKELETON */}
-        {loadingDemandes && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-64 rounded-2xl bg-white border border-slate-200 animate-pulse p-6 space-y-4 shadow-sm">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-slate-100 shrink-0"></div>
-                  <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-slate-100 rounded w-1/2"></div>
-                    <div className="h-3 bg-slate-100 rounded w-1/3"></div>
-                  </div>
-                </div>
-                <div className="h-16 bg-slate-100 rounded-xl"></div>
-                <div className="h-10 bg-slate-100 rounded-xl"></div>
+          <div className="rounded-[26px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                  En attente
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#0d1f1a]">{pendingCount}</p>
               </div>
-            ))}
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+                <Hourglass size={20} />
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* EMPTY STATE */}
-        {!loadingDemandes && demandesList.length === 0 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm space-y-2">
-            <AlertCircle size={36} className="mx-auto text-slate-400" />
-            <h3 className="text-sm font-bold text-slate-900">Aucune demande trouvée</h3>
-            <p className="text-xs text-slate-500">Vous n'avez pas encore effectué de demandes de services.</p>
+          <div className="rounded-[26px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                  En cours
+                </p>
+                <p className="mt-2 text-3xl font-black text-[#0d1f1a]">{progressCount}</p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <PlayCircle size={20} />
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* CONTENT GRID */}
-        {!loadingDemandes && demandesList.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {demandesList.map((item) => {
-              const statusLower = item.status?.toLowerCase();
-              const isInProgress = statusLower === "in_progress" || statusLower === "in-progress" || statusLower === "accepted" || statusLower === "accepté";
-              const isPending = !statusLower || statusLower === "pending" || statusLower === "en_attente" || statusLower === "en attente";
+          <div className="relative overflow-hidden rounded-[26px] bg-emerald-400 p-5 text-[#0d1f1a] shadow-[0_14px_35px_rgba(16,185,129,0.18)]">
+            <div className="absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-white/15" />
+            <div className="relative flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-950/60">
+                  Terminées
+                </p>
+                <p className="mt-2 text-3xl font-black">{completedCount}</p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300">
+                <CheckCircle2 size={20} />
+              </div>
+            </div>
+          </div>
+        </section>
 
-              return (
+        <section>
+          <div className="mb-5">
+            <div className="mb-2 flex items-center gap-2">
+              <Calendar size={14} className="text-emerald-600" />
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                Mes interventions
+              </span>
+            </div>
+            <h2 className="text-2xl font-black tracking-tight text-[#0d1f1a]">
+              Demandes récentes
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Consultez les informations et l'avancement de chaque demande.
+            </p>
+          </div>
+
+          {loadingDemandes && (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {[1, 2, 3].map((n) => (
                 <div
-                  key={item.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-slate-300 hover:shadow-md transition flex flex-col justify-between space-y-4 group"
+                  key={n}
+                  className="h-[355px] animate-pulse rounded-[30px] border border-slate-200 bg-white p-5"
                 >
-                  <div className="space-y-4">
-                    {/* Header Item */}
-                    <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
-                      <div className="flex items-center gap-3">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                            <User size={20} />
+                  <div className="flex gap-3">
+                    <div className="h-14 w-14 rounded-2xl bg-slate-100" />
+                    <div className="flex-1 space-y-2 pt-2">
+                      <div className="h-4 w-1/2 rounded bg-slate-100" />
+                      <div className="h-3 w-1/3 rounded bg-slate-100" />
+                    </div>
+                  </div>
+                  <div className="mt-6 h-24 rounded-2xl bg-slate-100" />
+                  <div className="mt-5 h-12 rounded-2xl bg-slate-100" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!loadingDemandes && demandesList.length === 0 && (
+            <div className="rounded-[30px] border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                <Calendar size={26} />
+              </div>
+              <h3 className="mt-4 text-lg font-black text-[#0d1f1a]">
+                Aucune demande
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Vous n'avez pas encore effectué de demande de service.
+              </p>
+            </div>
+          )}
+
+          {!loadingDemandes && demandesList.length > 0 && (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {demandesList.map((item, index) => {
+                const statusLower = item.status?.toLowerCase();
+                const isInProgress =
+                  statusLower === "in_progress" ||
+                  statusLower === "in-progress" ||
+                  statusLower === "accepted" ||
+                  statusLower === "accepté";
+
+                const isPending =
+                  !statusLower ||
+                  statusLower === "pending" ||
+                  statusLower === "en_attente" ||
+                  statusLower === "en attente";
+
+                return (
+                  <article
+                    key={item.id}
+                    className="group relative overflow-hidden rounded-[30px] border border-slate-200/80 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.05)] transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_20px_50px_rgba(15,23,42,0.09)]"
+                  >
+                    <span className="pointer-events-none absolute -right-2 top-14 text-[88px] font-black leading-none text-slate-50">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
+                    <div className="relative">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300">
+                              <User size={21} />
+                            </div>
+                          )}
+
+                          <div className="min-w-0">
+                            <h3 className="truncate text-base font-black text-[#0d1f1a]">
+                              {item.name || "Technicien"}
+                            </h3>
+                            {item.city && (
+                              <p className="mt-1 flex items-center gap-1 text-xs font-medium text-slate-500">
+                                <MapPin size={12} />
+                                <span className="truncate">{item.city}</span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0">{getStatusBadge(item.status)}</div>
+                      </div>
+
+                      <div className="mt-5 space-y-2 rounded-2xl bg-[#f7f9f8] p-4">
+                        {item.email && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600">
+                            <Mail size={14} className="shrink-0 text-emerald-600" />
+                            <span className="truncate">{item.email}</span>
                           </div>
                         )}
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-slate-900 text-sm truncate">
-                            {item.name || "Technicien"}
-                          </h3>
-                          {item.city && (
-                            <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                              <MapPin size={12} className="text-slate-400 shrink-0" />
-                              <span className="truncate">{item.city}</span>
-                            </p>
-                          )}
+
+                        {item.phone && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600">
+                            <Phone size={14} className="shrink-0 text-emerald-600" />
+                            <span>{item.phone}</span>
+                          </div>
+                        )}
+
+                        {item.description && (
+                          <p className="mt-3 border-t border-slate-200 pt-3 text-sm leading-6 text-slate-600">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="mt-5 grid grid-cols-2 gap-3">
+                        <div className="rounded-2xl border border-slate-100 bg-white p-3">
+                          <div className="mb-1 flex items-center gap-1.5 text-slate-400">
+                            <Calendar size={11} />
+                            <span className="text-[9px] font-black uppercase tracking-[0.12em]">
+                              Demandé le
+                            </span>
+                          </div>
+                          <p className="text-xs font-bold text-slate-700">
+                            {item.request_date || "N/A"}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3">
+                          <div className="mb-1 flex items-center gap-1.5 text-emerald-600">
+                            <Clock size={11} />
+                            <span className="text-[9px] font-black uppercase tracking-[0.12em]">
+                              Prévu le
+                            </span>
+                          </div>
+                          <p className="text-xs font-bold text-emerald-800">
+                            {item.scheduled_date || "N/A"}
+                          </p>
                         </div>
                       </div>
-                      <div>{getStatusBadge(item.status)}</div>
-                    </div>
 
-                    {/* Info Card */}
-                    <div className="space-y-2 text-xs text-slate-600 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                      {item.email && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Mail size={14} className="text-blue-600 shrink-0" />
-                          <span className="truncate">{item.email}</span>
-                        </div>
-                      )}
-                      {item.phone && (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Phone size={14} className="text-blue-600 shrink-0" />
-                          <span>{item.phone}</span>
-                        </div>
-                      )}
-                      {item.description && (
-                        <p className="text-slate-600 text-xs mt-2 pt-2 border-t border-slate-200/60 line-clamp-3">
-                          <span className="text-slate-400 font-medium">Message: </span>
-                          {item.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    {/* Action Contact Button (si in_progress) */}
-                    {isInProgress && (
-                      <div className="pt-2 mb-3">
+                      {isInProgress && (
                         <button
                           onClick={() => handleOpenContactModal(item)}
-                          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition active:scale-95 shadow-sm"
+                          className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#0d1f1a] text-xs font-black text-white transition hover:bg-[#143128] active:scale-[0.98]"
                         >
-                          <MessageSquare size={15} />
-                          <span>Contacter le technicien</span>
+                          <MessageSquare size={15} className="text-emerald-400" />
+                          Contacter le technicien
                         </button>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Action Annuler Button (si en attente) */}
-                    {isPending && (
-                      <div className="pt-2 mb-3">
+                      {isPending && (
                         <button
                           onClick={() => handleCancelDemande(item.id)}
                           disabled={cancelingId === item.id}
-                          className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-semibold py-2.5 px-4 rounded-xl text-xs transition active:scale-95 disabled:opacity-50"
+                          className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 text-xs font-black text-rose-600 transition hover:bg-rose-100 active:scale-[0.98] disabled:opacity-50"
                         >
                           {cancelingId === item.id ? (
                             <Loader2 size={15} className="animate-spin" />
                           ) : (
                             <Trash2 size={15} />
                           )}
-                          <span>Annuler la demande</span>
+                          Annuler la demande
                         </button>
-                      </div>
-                    )}
-
-                    {/* Dates Footer */}
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] text-slate-400 uppercase font-semibold">Demandé le</span>
-                        <span className="text-slate-700">{item.request_date || "N/A"}</span>
-                      </div>
-                      <div className="flex flex-col text-right">
-                        <span className="text-[10px] text-slate-400 uppercase font-semibold">Prévu le</span>
-                        <span className="text-blue-600 font-semibold">{item.scheduled_date || "N/A"}</span>
-                      </div>
+                      )}
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
-        {/* MODAL CONTACT */}
         {selectedTechnician && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg overflow-hidden shadow-xl relative space-y-0">
-              
-              {/* Modal Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 border border-blue-100 rounded-xl text-blue-600">
-                    <MessageSquare size={18} />
-                  </div>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#07110e]/70 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-lg overflow-hidden rounded-[30px] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.25)]">
+              <div className="relative overflow-hidden bg-[#0d1f1a] px-6 py-6">
+                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-400/10" />
+
+                <div className="relative flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base">
+                    <div className="mb-2 flex items-center gap-2 text-emerald-400">
+                      <MessageSquare size={14} />
+                      <span className="text-[9px] font-black uppercase tracking-[0.18em]">
+                        Messagerie
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-black text-white">
                       Contacter {selectedTechnician.name || "le technicien"}
                     </h3>
-                    <p className="text-xs text-slate-500">Demande #{selectedTechnician.id}</p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Demande #{selectedTechnician.id}
+                    </p>
                   </div>
+
+                  <button
+                    onClick={handleCloseModal}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-slate-300 transition hover:bg-white/15 hover:text-white"
+                  >
+                    <X size={17} />
+                  </button>
                 </div>
-                <button
-                  onClick={handleCloseModal}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition"
-                >
-                  <X size={18} />
-                </button>
               </div>
 
-              {/* Modal Content */}
               {sendSuccess ? (
-                <div className="p-8 text-center space-y-3">
-                  <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-600 mx-auto">
-                    <CheckCircle2 size={24} />
+                <div className="p-10 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                    <CheckCircle2 size={25} />
                   </div>
-                  <h4 className="text-base font-bold text-slate-900">Message envoyé !</h4>
-                  <p className="text-xs text-slate-500">
+                  <h4 className="mt-4 text-lg font-black text-[#0d1f1a]">
+                    Message envoyé !
+                  </h4>
+                  <p className="mt-1 text-sm text-slate-500">
                     Votre message a été transmis avec succès au technicien.
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSendMessageSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSendMessageSubmit} className="space-y-5 p-6">
                   {sendError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs flex items-center gap-2">
+                    <div className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
                       <AlertCircle size={15} />
-                      <span>{sendError}</span>
+                      {sendError}
                     </div>
                   )}
 
-                  {/* Tech Quick Details */}
-                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-600">
-                    <span className="flex items-center gap-1.5 font-semibold text-slate-800">
-                      <User size={14} className="text-blue-600" />
+                  <div className="flex flex-col gap-2 rounded-2xl bg-[#f7f9f8] p-4 text-xs sm:flex-row sm:items-center sm:justify-between">
+                    <span className="flex items-center gap-2 font-bold text-slate-800">
+                      <User size={14} className="text-emerald-600" />
                       {selectedTechnician.name}
                     </span>
+
                     {selectedTechnician.phone && (
                       <a
                         href={`tel:${selectedTechnician.phone}`}
-                        className="flex items-center gap-1 text-blue-600 hover:underline font-medium"
+                        className="flex items-center gap-1 font-bold text-emerald-700"
                       >
                         <Phone size={13} />
                         {selectedTechnician.phone}
@@ -369,10 +501,9 @@ export default function Demandesc() {
                     )}
                   </div>
 
-                  {/* Message Input */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700">
-                      Votre message :
+                  <div>
+                    <label className="mb-2 block text-xs font-black text-slate-700">
+                      Votre message
                     </label>
                     <textarea
                       rows={4}
@@ -380,35 +511,34 @@ export default function Demandesc() {
                       value={messageContent}
                       onChange={(e) => setMessageContent(e.target.value)}
                       placeholder="Écrivez votre message ici..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600 transition resize-none"
-                    ></textarea>
+                      className="w-full resize-none rounded-2xl border border-slate-200 bg-[#f7f9f8] p-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
+                    />
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center justify-end gap-3 pt-2">
+                  <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
                     <button
                       type="button"
                       onClick={handleCloseModal}
-                      className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition"
+                      className="h-11 rounded-2xl px-5 text-xs font-black text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
                     >
                       Annuler
                     </button>
+
                     <button
                       type="submit"
                       disabled={sendingMessage || !messageContent.trim()}
-                      className="flex items-center gap-2 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition active:scale-95 disabled:opacity-50"
+                      className="flex h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-5 text-xs font-black text-[#0d1f1a] transition hover:bg-emerald-300 disabled:opacity-50"
                     >
                       {sendingMessage ? (
                         <Loader2 size={14} className="animate-spin" />
                       ) : (
                         <Send size={14} />
                       )}
-                      <span>Envoyer</span>
+                      Envoyer
                     </button>
                   </div>
                 </form>
               )}
-
             </div>
           </div>
         )}
