@@ -52,13 +52,7 @@ export default function Register() {
     try {
       const response = await register(formData);
 
-      if (response.user.role === "technicien") {
-        navigate("/technicien/TechnicienDashboard");
-      } else if (response.user.role === "client") {
-        navigate("/client/ClientDashboard");
-      } else if (response.user.role === "admin") {
-        navigate("/admin/AdminDashboard");
-      }
+     navigate("/login");
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
       alert("Erreur lors de l'inscription. Veuillez vérifier vos informations.");

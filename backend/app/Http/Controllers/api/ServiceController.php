@@ -23,18 +23,34 @@ class ServiceController extends Controller
             'services' => $services
         ]);
     }
-    public function showService()
-    {
-        $services = DB::select("select users.* , services.* FROM services
-INNER JOIN techniciens ON techniciens.id = services.technicien_id
-INNER JOIN users on users.id = techniciens.user_id
-WHERE techniciens.availability=1");
+   public function showService()
+{
+    $services = DB::select("
+        SELECT 
+            users.*,
+            services.*,
+            categories.name AS category_name,
+            categories.icon AS category_icon,
+            categories.image AS category_image
+        FROM services
 
-        return response()->json([
-            'status' => 200,
-            'services' => $services
-        ]);
-    }
+        INNER JOIN techniciens 
+            ON techniciens.id = services.technicien_id
+
+        INNER JOIN users 
+            ON users.id = techniciens.user_id
+
+        INNER JOIN categories 
+            ON categories.id = services.category_id
+
+        WHERE techniciens.availability = 1
+    ");
+
+    return response()->json([
+        'status' => 200,
+        'services' => $services
+    ]);
+}
 
     public function addService(Request $request)
     {

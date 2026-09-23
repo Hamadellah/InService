@@ -38,8 +38,9 @@ Route::middleware(['auth:sanctum','client'])->group(function(){
     Route::get('/clientServiceRequests',[ClientController::class,'getServiceRequests']);
     Route::post('/sendMessage/{id}',[MessageController::class,'sendMessage']);
     Route::get('/services',[ServiceController::class,'showService']);
-    Route::post('/favorite/{serviceId}',[FavoriteController::class,'makeFavorite']);
+    Route::post('/makeFavorite/{serviceId}',[FavoriteController::class,'makeFavorite']);
     Route::get('/getfavorites',[FavoriteController::class,'getFavorites']);
+    Route::delete('/deleteFavorite/{technicienId}',[FavoriteController::class, 'removeFavorite']);
     
    
 });

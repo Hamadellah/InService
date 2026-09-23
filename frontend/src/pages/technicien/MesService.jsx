@@ -1,6 +1,7 @@
-
 import React, { useEffect, useState } from "react";
 import { useservice } from "../../hooks/useservice";
+import { usecategory } from "../../hooks/usecategory";
+
 import {
   Wrench,
   Tag,
@@ -10,14 +11,12 @@ import {
   Trash2,
   Pencil,
   X,
-  Sparkles,
   Layers3,
-  ArrowUpRight,
   PackageOpen,
-  CircleDollarSign,
   Settings2,
-  ChevronRight
+  ChevronDown,
 } from "lucide-react";
+
 import { Link } from "react-router-dom";
 
 export default function MesService() {
@@ -27,8 +26,14 @@ export default function MesService() {
     error,
     messervices,
     updateService,
-    deleteService
+    deleteService,
   } = useservice();
+
+  const {
+    categories,
+    loading: loadingCategories,
+    fetchCategories,
+  } = usecategory();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
@@ -37,7 +42,7 @@ export default function MesService() {
     title: "",
     description: "",
     price: "",
-    category_id: ""
+    category_id: "",
   });
 
   const [actionLoading, setActionLoading] = useState(false);
@@ -45,7 +50,24 @@ export default function MesService() {
 
   useEffect(() => {
     messervices();
+    fetchCategories();
   }, []);
+
+  const servicesList = Array.isArray(services)
+    ? services
+    : services?.data || services?.services || [];
+
+  const categoriesList = Array.isArray(categories)
+    ? categories
+    : categories?.data || categories?.categories || [];
+
+  const getCategoryName = (categoryId) => {
+    const category = categoriesList.find(
+      (cat) => Number(cat.id) === Number(categoryId)
+    );
+
+    return category?.name || "Catégorie";
+  };
 
   const handleOpenEditModal = (service) => {
     setEditingService(service);
@@ -54,7 +76,7 @@ export default function MesService() {
       title: service.title || "",
       description: service.description || "",
       price: service.price || "",
-      category_id: service.category_id || ""
+      category_id: service.category_id || "",
     });
 
     setModalError(null);
@@ -62,14 +84,17 @@ export default function MesService() {
   };
 
   const handleCloseModal = () => {
+    if (actionLoading) return;
+
     setIsEditModalOpen(false);
     setEditingService(null);
+    setModalError(null);
 
     setFormData({
       title: "",
       description: "",
       price: "",
-      category_id: ""
+      category_id: "",
     });
   };
 
@@ -78,21 +103,27 @@ export default function MesService() {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
 
+    if (!editingService) return;
+
     setActionLoading(true);
     setModalError(null);
 
     try {
       await updateService(editingService.id, formData);
+
       handleCloseModal();
+
       await messervices();
     } catch (err) {
+      console.error(err);
+
       setModalError(
         err.response?.data?.message ||
           "Erreur lors de la modification du service."
@@ -103,24 +134,30 @@ export default function MesService() {
   };
 
   const handleDelete = async (serviceId) => {
-    if (window.confirm("Voulez-vous vraiment supprimer ce service ?")) {
-      try {
-        await deleteService(serviceId);
-        await messervices();
-      } catch (err) {
-        alert("Erreur lors de la suppression du service.");
-      }
+    const confirmation = window.confirm(
+      "Voulez-vous vraiment supprimer ce service ?"
+    );
+
+    if (!confirmation) return;
+
+    try {
+      await deleteService(serviceId);
+      await messervices();
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la suppression du service.");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#f5f7f6] text-slate-900">
-
       <div className="mx-auto max-w-[1500px] p-4 sm:p-6 lg:p-8">
 
-        {/* HERO */}
-        <section className="relative overflow-hidden rounded-[32px] bg-[#0d1f1a] px-6 py-8 sm:px-8 lg:px-10">
+        {/* =========================
+            HERO
+        ========================== */}
 
+        <section className="relative overflow-hidden rounded-[32px] bg-[#0d1f1a] px-6 py-8 sm:px-8 lg:px-10">
           <div className="pointer-events-none absolute -right-28 -top-32 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
 
           <div className="pointer-events-none absolute -bottom-36 left-[35%] h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
@@ -128,43 +165,39 @@ export default function MesService() {
           <div className="relative z-10 flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
 
             <div>
-
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
-
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
 
                 <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100/70">
                   Catalogue personnel
                 </span>
-
               </div>
 
               <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
-
                 Mes services
-
                 <span className="text-emerald-400">.</span>
-
               </h1>
 
               <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
                 Gérez vos prestations, ajustez vos tarifs et gardez
                 votre catalogue toujours à jour.
               </p>
-
             </div>
 
             <div className="flex flex-wrap gap-3">
 
               <button
-                onClick={messervices}
-                disabled={loading}
+                onClick={() => {
+                  messervices();
+                  fetchCategories();
+                }}
+                disabled={loading || loadingCategories}
                 className="group flex h-12 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm font-bold text-white transition hover:bg-white/10 disabled:opacity-50"
               >
                 <RotateCw
                   size={17}
                   className={
-                    loading
+                    loading || loadingCategories
                       ? "animate-spin text-emerald-400"
                       : "transition-transform duration-500 group-hover:rotate-180"
                   }
@@ -183,16 +216,16 @@ export default function MesService() {
               </Link>
 
             </div>
-
           </div>
-
         </section>
 
-        {/* SUMMARY BAR */}
+        {/* =========================
+            SUMMARY
+        ========================== */}
+
         <section className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
 
           <div className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.035)]">
-
             <div className="flex items-center justify-between">
 
               <div>
@@ -201,7 +234,7 @@ export default function MesService() {
                 </p>
 
                 <p className="mt-2 text-3xl font-black text-slate-900">
-                  {Array.isArray(services) ? services.length : 0}
+                  {servicesList.length}
                 </p>
               </div>
 
@@ -210,11 +243,9 @@ export default function MesService() {
               </div>
 
             </div>
-
           </div>
 
           <div className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.035)]">
-
             <div className="flex items-center justify-between">
 
               <div>
@@ -241,7 +272,6 @@ export default function MesService() {
               </div>
 
             </div>
-
           </div>
 
           <div className="relative overflow-hidden rounded-[24px] bg-emerald-400 p-5 shadow-[0_8px_30px_rgba(16,185,129,0.15)]">
@@ -252,27 +282,28 @@ export default function MesService() {
 
               <div>
                 <p className="text-[10px] font-black uppercase tracking-wider text-emerald-950/60">
-                  Gestion
+                  Catégories
                 </p>
 
                 <p className="mt-2 text-lg font-black text-[#0d1f1a]">
-                  Catalogue
+                  {categoriesList.length} disponibles
                 </p>
               </div>
 
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300">
-                <Wrench size={19} />
+                <Tag size={19} />
               </div>
 
             </div>
-
           </div>
 
         </section>
 
-        {/* ERROR */}
-        {error && (
+        {/* =========================
+            ERROR
+        ========================== */}
 
+        {error && (
           <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600">
 
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100">
@@ -285,15 +316,19 @@ export default function MesService() {
               </p>
 
               <p className="mt-1 text-xs text-red-500">
-                {error}
+                {typeof error === "string"
+                  ? error
+                  : error?.message || "Une erreur est survenue."}
               </p>
             </div>
 
           </div>
-
         )}
 
-        {/* SERVICES */}
+        {/* =========================
+            SERVICES
+        ========================== */}
+
         <section className="mt-9">
 
           <div className="mb-6 flex items-end justify-between">
@@ -301,7 +336,6 @@ export default function MesService() {
             <div>
 
               <div className="mb-2 flex items-center gap-2">
-
                 <PackageOpen
                   size={16}
                   className="text-emerald-600"
@@ -310,7 +344,6 @@ export default function MesService() {
                 <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-600">
                   Vos prestations
                 </span>
-
               </div>
 
               <h2 className="text-2xl font-black tracking-tight text-slate-900">
@@ -323,29 +356,29 @@ export default function MesService() {
 
             </div>
 
-            {!loading && Array.isArray(services) && services.length > 0 && (
-
+            {!loading && servicesList.length > 0 && (
               <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-500 sm:flex">
 
                 <span className="text-emerald-600">
-                  {services.length}
+                  {servicesList.length}
                 </span>
 
-                prestation{services.length > 1 ? "s" : ""}
+                prestation
+                {servicesList.length > 1 ? "s" : ""}
 
               </div>
-
             )}
 
           </div>
 
-          {/* LOADING */}
-          {loading && (
+          {/* =========================
+              LOADING
+          ========================== */}
 
+          {loading && (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
               {[1, 2, 3, 4, 5, 6].map((n) => (
-
                 <div
                   key={n}
                   className="h-[280px] animate-pulse rounded-[28px] border border-slate-200 bg-white p-6"
@@ -355,7 +388,7 @@ export default function MesService() {
 
                     <div className="h-12 w-12 rounded-2xl bg-slate-100" />
 
-                    <div className="h-7 w-20 rounded-full bg-slate-100" />
+                    <div className="h-7 w-28 rounded-full bg-slate-100" />
 
                   </div>
 
@@ -378,19 +411,18 @@ export default function MesService() {
                   </div>
 
                 </div>
-
               ))}
 
             </div>
-
           )}
 
-          {/* EMPTY */}
+          {/* =========================
+              EMPTY
+          ========================== */}
+
           {!loading &&
             !error &&
-            Array.isArray(services) &&
-            services.length === 0 && (
-
+            servicesList.length === 0 && (
               <div className="relative overflow-hidden rounded-[32px] border border-dashed border-slate-300 bg-white px-6 py-20 text-center">
 
                 <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-emerald-100/60 blur-3xl" />
@@ -414,57 +446,65 @@ export default function MesService() {
                     className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-emerald-400 px-5 text-xs font-black text-[#0d1f1a] transition hover:bg-emerald-300"
                   >
                     <Plus size={15} />
-
                     Ajouter un service
                   </Link>
 
                 </div>
 
               </div>
-
             )}
 
-          {/* SERVICES GRID */}
-          {!loading &&
-            Array.isArray(services) &&
-            services.length > 0 && (
+          {/* =========================
+              SERVICES GRID
+          ========================== */}
 
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {!loading && servicesList.length > 0 && (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
 
-                {services.map((service, index) => (
+              {servicesList.map((service, index) => {
+                const categoryName =
+                  service.category_name ||
+                  getCategoryName(service.category_id);
 
+                return (
                   <article
                     key={service.id}
                     className="group relative flex min-h-[285px] flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)]"
                   >
 
-                    {/* Number */}
+                    {/* NUMBER */}
+
                     <span className="pointer-events-none absolute right-4 top-[70px] text-[78px] font-black leading-none text-slate-50 transition-colors duration-300 group-hover:text-emerald-50">
                       {String(index + 1).padStart(2, "0")}
                     </span>
 
                     {/* TOP */}
-                    <div className="relative flex items-start justify-between">
 
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300 transition-all duration-300 group-hover:rotate-3 group-hover:bg-emerald-400 group-hover:text-[#0d1f1a]">
+                    <div className="relative flex items-start justify-between gap-3">
+
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0d1f1a] text-emerald-300 transition-all duration-300 group-hover:rotate-3 group-hover:bg-emerald-400 group-hover:text-[#0d1f1a]">
                         <Wrench size={20} />
                       </div>
 
                       {service.category_id && (
+                        <div className="flex max-w-[70%] items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700">
 
-                        <div className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          <Tag
+                            size={11}
+                            className="shrink-0"
+                          />
 
-                          <Tag size={11} />
-
-                          Cat. {service.category_id}
+                          <span className="truncate">
+                            {categoryName}
+                          </span>
 
                         </div>
-
                       )}
 
                     </div>
 
                     {/* CONTENT */}
+
                     <div className="relative mt-6 flex-1">
 
                       <h3 className="max-w-[80%] text-lg font-black tracking-tight text-slate-900 transition-colors group-hover:text-emerald-700">
@@ -479,6 +519,7 @@ export default function MesService() {
                     </div>
 
                     {/* FOOTER */}
+
                     <div className="relative mt-6 flex items-end justify-between border-t border-slate-100 pt-5">
 
                       <div>
@@ -491,7 +532,9 @@ export default function MesService() {
 
                           <span className="text-2xl font-black tracking-tight text-slate-900">
                             {service.price
-                              ? Number(service.price).toLocaleString()
+                              ? Number(
+                                  service.price
+                                ).toLocaleString()
                               : "0"}
                           </span>
 
@@ -504,9 +547,11 @@ export default function MesService() {
                       </div>
 
                       {/* ACTIONS */}
+
                       <div className="flex items-center gap-2">
 
                         <button
+                          type="button"
                           onClick={() =>
                             handleOpenEditModal(service)
                           }
@@ -517,6 +562,7 @@ export default function MesService() {
                         </button>
 
                         <button
+                          type="button"
                           onClick={() =>
                             handleDelete(service.id)
                           }
@@ -531,25 +577,27 @@ export default function MesService() {
                     </div>
 
                   </article>
+                );
+              })}
 
-                ))}
-
-              </div>
-
-            )}
+            </div>
+          )}
 
         </section>
 
       </div>
 
-      {/* EDIT MODAL */}
-      {isEditModalOpen && (
+      {/* =========================
+          EDIT MODAL
+      ========================== */}
 
+      {isEditModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#07110e]/70 p-4 backdrop-blur-md">
 
           <div className="relative w-full max-w-lg overflow-hidden rounded-[30px] border border-white/20 bg-white shadow-2xl">
 
             {/* HEADER */}
+
             <div className="relative overflow-hidden bg-[#0d1f1a] px-6 py-6">
 
               <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-400/10 blur-2xl" />
@@ -558,7 +606,7 @@ export default function MesService() {
 
                 <div className="flex gap-4">
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-400 text-[#0d1f1a]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-400 text-[#0d1f1a]">
                     <Pencil size={19} />
                   </div>
 
@@ -581,8 +629,10 @@ export default function MesService() {
                 </div>
 
                 <button
+                  type="button"
                   onClick={handleCloseModal}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+                  disabled={actionLoading}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
                 >
                   <X size={18} />
                 </button>
@@ -592,10 +642,10 @@ export default function MesService() {
             </div>
 
             {/* FORM */}
+
             <div className="p-6">
 
               {modalError && (
-
                 <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-xs font-medium text-red-600">
 
                   <AlertCircle
@@ -606,7 +656,6 @@ export default function MesService() {
                   <span>{modalError}</span>
 
                 </div>
-
               )}
 
               <form
@@ -615,6 +664,7 @@ export default function MesService() {
               >
 
                 {/* TITLE */}
+
                 <div>
 
                   <label className="mb-2 block text-xs font-bold text-slate-700">
@@ -634,7 +684,10 @@ export default function MesService() {
                 </div>
 
                 {/* PRICE + CATEGORY */}
+
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                  {/* PRICE */}
 
                   <div>
 
@@ -648,6 +701,7 @@ export default function MesService() {
                         type="number"
                         name="price"
                         step="0.01"
+                        min="0"
                         required
                         value={formData.price}
                         onChange={handleInputChange}
@@ -663,26 +717,83 @@ export default function MesService() {
 
                   </div>
 
+                  {/* CATEGORY SELECT */}
+
                   <div>
 
                     <label className="mb-2 block text-xs font-bold text-slate-700">
-                      Catégorie ID
+                      Catégorie
                     </label>
 
-                    <input
-                      type="number"
-                      name="category_id"
-                      required
-                      value={formData.category_id}
-                      onChange={handleInputChange}
-                      className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10"
-                    />
+                    <div className="relative">
+
+                      <select
+                        name="category_id"
+                        required
+                        value={formData.category_id}
+                        onChange={handleInputChange}
+                        disabled={loadingCategories}
+                        className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-sm font-medium text-slate-800 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+
+                        <option value="">
+                          {loadingCategories
+                            ? "Chargement..."
+                            : "Choisir une catégorie"}
+                        </option>
+
+                        {categoriesList.map(
+                          (category) => (
+                            <option
+                              key={category.id}
+                              value={category.id}
+                            >
+                              {category.name}
+                            </option>
+                          )
+                        )}
+
+                      </select>
+
+                      <ChevronDown
+                        size={16}
+                        className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                      />
+
+                    </div>
 
                   </div>
 
                 </div>
 
+                {/* SELECTED CATEGORY */}
+
+                {formData.category_id && (
+                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
+
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                      <Tag size={15} />
+                    </div>
+
+                    <div>
+
+                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-emerald-600">
+                        Catégorie sélectionnée
+                      </p>
+
+                      <p className="mt-0.5 text-xs font-black text-slate-800">
+                        {getCategoryName(
+                          formData.category_id
+                        )}
+                      </p>
+
+                    </div>
+
+                  </div>
+                )}
+
                 {/* DESCRIPTION */}
+
                 <div>
 
                   <label className="mb-2 block text-xs font-bold text-slate-700">
@@ -702,19 +813,24 @@ export default function MesService() {
                 </div>
 
                 {/* ACTIONS */}
+
                 <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
 
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="h-11 rounded-xl px-5 text-xs font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                    disabled={actionLoading}
+                    className="h-11 rounded-xl px-5 text-xs font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
                   >
                     Annuler
                   </button>
 
                   <button
                     type="submit"
-                    disabled={actionLoading}
+                    disabled={
+                      actionLoading ||
+                      loadingCategories
+                    }
                     className="flex h-11 items-center gap-2 rounded-xl bg-[#0d1f1a] px-6 text-xs font-black text-white shadow-lg transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
 
@@ -744,7 +860,6 @@ export default function MesService() {
           </div>
 
         </div>
-
       )}
 
     </div>

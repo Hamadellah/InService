@@ -63,6 +63,7 @@ class FavoriteController extends Controller
         $favorites = DB::select('
             SELECT 
                 favorites.id AS favorite_id,
+                techniciens.id AS technicien_id,
                 users.name,
                 users.email,
                 users.phone,
@@ -79,4 +80,36 @@ class FavoriteController extends Controller
             'message' => 'Liste des techniciens favoris récupérée avec succès',
             'data' => $favorites
         ], 200);
-    }};
+    }
+public function removeFavorite($technicienId)
+{
+    $user = auth()->user();
+
+    $client = Client::where('user_id', $user->id)->first();
+
+    if (!$client) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Profil client non trouvé.'
+        ], 404);
+    }
+
+    $favorite = Favorite::where('client_id', $client->id)
+        ->where('technicien_id', $technicienId)
+        ->first();
+
+    if (!$favorite) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Favori non trouvé.'
+        ], 404);
+    }
+
+    $favorite->delete();
+
+    return response()->json([
+        'status' => 200,
+        'message' => 'Favori supprimé avec succès.'
+    ], 200);
+}
+};
