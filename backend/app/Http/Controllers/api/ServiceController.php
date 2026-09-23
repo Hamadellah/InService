@@ -115,7 +115,24 @@ class ServiceController extends Controller
         ], 404);
     }
 
-    $services = Service::where('technicien_id', $technicien->id)->get();
+    $services = DB::select(" SELECT 
+            users.*,
+            services.*,
+            categories.name AS category_name,
+            categories.icon AS category_icon,
+            categories.image AS category_image
+        FROM services
+
+        INNER JOIN techniciens 
+            ON techniciens.id = services.technicien_id
+
+        INNER JOIN users 
+            ON users.id = techniciens.user_id
+
+        INNER JOIN categories 
+            ON categories.id = services.category_id
+
+        WHERE techniciens.availability = 1 and techniciens.id=?", [$technicien->id]);
 
     return response()->json([
         'status' => 200,

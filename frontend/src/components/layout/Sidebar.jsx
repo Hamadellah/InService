@@ -57,11 +57,7 @@ export default function Sidebar({
         icon: Calendar,
         to: "/technicien/demandes"
       },
-      {
-        name: "Disponibilités",
-        icon: Clock,
-        to: "/technicien/Disponibilites"
-      },
+      
       {
         name: "Messagerie",
         icon: MessageSquare,
