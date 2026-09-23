@@ -543,3 +543,8 @@ Licence
 
 Ce projet a été réalisé à des fins pédagogiques.
 
+<img width="681" height="443" alt="diagramme USECASE" src="https://github.com/user-attachments/assets/f52b3837-3901-4317-a5ce-ef60886252e0" />
+<img width="683" height="403" alt="diagramme ERD" src="https://github.com/user-attachments/assets/16137091-533b-4bb5-8c9c-9e6cb426a743" />
+<img width="551" height="464" alt="diagramme de classe " src="https://github.com/user-attachments/assets/fdb53f94-97b4-4869-864f-cdce7b1b3e5a" />
+
+
