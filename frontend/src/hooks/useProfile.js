@@ -15,7 +15,8 @@ export const useProfile = () => {
       setUserProfile(response.data.profile);
     } catch (err) {
       setError(
-        err.response?.data?.message || "Erreur lors du chargement du profil",
+        err.response?.data?.message ||
+        "Erreur lors du chargement du profil"
       );
     } finally {
       setLoading(false);
@@ -32,7 +33,7 @@ export const useProfile = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Erreur lors de la modification du profil",
+        "Erreur lors de la modification du profil"
       );
     }
   };
