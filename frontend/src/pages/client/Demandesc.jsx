@@ -23,7 +23,6 @@ export default function Demandesc() {
   const [sendSuccess, setSendSuccess] = useState(false);
   const [sendError, setSendError] = useState("");
 
-  // State loading annulation demande
   const [cancelingId, setCancelingId] = useState(null);
 
   useEffect(() => {

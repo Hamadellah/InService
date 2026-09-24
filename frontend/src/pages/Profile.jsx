@@ -26,11 +26,9 @@ export default function Profile() {
   const [successMsg, setSuccessMsg] = useState(null);
   const [formError, setFormError] = useState(null);
 
-  // Nested details
   const clientDetails = userProfile?.client;
   const technicienDetails = userProfile?.technicien;
 
-  // Form state initialized according to role
   const [formData, setFormData] = useState({
     address: "",
     bio: "",

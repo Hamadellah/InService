@@ -16,33 +16,27 @@ public function sendMessage($id, Request $request)
     try {
         $user = auth()->user();
 
-        // 1. Validation
         $request->validate([
             'message' => 'required|string',
         ]);
 
-        // 2. Fetch Service Request
         $service = ServiceRequest::findOrFail($id);
 
         if (!$service->technicien_id) {
             return response()->json(['message' => 'Aucun technicien assigné à ce service'], 400);
         }
 
-        // Fetch Technicien with User ID
         $technicien = Technicien::findOrFail($service->technicien_id);
 
-        // 3. Verification dyal Client
         $client = Client::where('user_id', $user->id)->first();
 
         if (!$client) {
             return response()->json(['message' => 'Seul un client peut envoyer ce message'], 403);
         }
 
-        // 4. Creation dyal message
-        // ملاحظة: تأكد واش sender_id/receiver_id هما user_id أو client_id/technicien_id f Database
         $message = Message::create([
-            'sender_id'   => $user->id,             // User ID d Client
-            'receiver_id' => $technicien->user_id,  // User ID d Technicien
+            'sender_id'   => $user->id,             
+            'receiver_id' => $technicien->user_id,  
             'message'     => $request->message,
             'is_read'     => false,
         ]);
@@ -50,7 +44,6 @@ public function sendMessage($id, Request $request)
         return response()->json($message, 201);
 
     } catch (\Exception $e) {
-        // هاد السطر غادي يخليك تشوف السبب الحقيقي ف Response يلا بقى شي مشكل
         return response()->json([
             'error' => 'Erreur Serveur',
             'details' => $e->getMessage()

@@ -1,0 +1,41 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+    container_name: inservice_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - database
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: inservice_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  database:
+    image: mysql:8.0
+    container_name: inservice_database
+    restart: always
+    environment:
+      MYSQL_DATABASE: inservice
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: inservice
+      MYSQL_PASSWORD: password
+    ports:
+      - "3308:3306"
+    volumes:
+      - inservice_data:/var/lib/mysql
+
+volumes:
+  inservice_data:

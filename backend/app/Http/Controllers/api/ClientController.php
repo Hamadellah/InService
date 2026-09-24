@@ -23,7 +23,6 @@ class ClientController extends Controller
             ], 404);
         }
 
-        // Query explicit b-smīyat l-tables bāsh ma-y-wqe3sh overlap f-l-IDs
         $serviceRequests = DB::select('
             SELECT 
                 service_requests.id AS id,

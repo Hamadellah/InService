@@ -17,9 +17,8 @@ import MessageTechnicien from "./pages/technicien/MessageTechnicien";
 import Profile from "./pages/Profile";
 import Favorites from "./pages/client/Favorites";
 import ClientMessage from "./pages/client/ClientMessage";
-import Disponibilites from "./pages/technicien/Disponibilites";
 export const router = createBrowserRouter([
-  // Public Routes (Bla Navbar/Sidebar dyal Dashboard)
+ 
   {
     path: "/",
     element: <HomePage />,
@@ -33,7 +32,6 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
 
-  // Protected Routes (Kamlin ghadin ysharku f l-Layout)
   {
     element: <Layout />,
     children: [
@@ -117,14 +115,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: "/technicien/Disponibilites",
-        element: (
-          <ProtectedRoute role="technicien">
-            <Disponibilites />
-          </ProtectedRoute>
-        ),
-      },
+      
     ],
   },
 ]);
