@@ -132,7 +132,7 @@ class ServiceController extends Controller
         INNER JOIN categories 
             ON categories.id = services.category_id
 
-        WHERE techniciens.availability = 1 and techniciens.id=?", [$technicien->id]);
+        WHERE  techniciens.id=?", [$technicien->id]);
 
     return response()->json([
         'status' => 200,

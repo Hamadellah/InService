@@ -26,7 +26,7 @@ export default function TechnicienDashboard() {
     addService,
     messervices,
   } = useservice();
-
+  
   const {
     categories,
     loading: categoriesLoading,
