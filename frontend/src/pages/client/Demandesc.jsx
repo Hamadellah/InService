@@ -8,16 +8,22 @@ import {
 } from "lucide-react";
 
 export default function Demandesc() {
-  const { 
-    getclientdemande, 
-    demandes, 
-    loading: loadingDemandes, 
-    deleteServiceRequest 
+
+  // Hooks
+  const {
+    getclientdemande,
+    demandes,
+    loading: loadingDemandes,
+    deleteServiceRequest
   } = useServiceRequest();
 
-  const { sendMessage, loading: sendingMessage } = useMessage();
+  const {
+    sendMessage,
+    loading: sendingMessage
+  } = useMessage();
 
-  // State modal de contact
+
+  // States
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [messageContent, setMessageContent] = useState("");
   const [sendSuccess, setSendSuccess] = useState(false);
@@ -25,120 +31,238 @@ export default function Demandesc() {
 
   const [cancelingId, setCancelingId] = useState(null);
 
+
+  // Charger les demandes au démarrage
   useEffect(() => {
     getclientdemande();
   }, []);
 
-  const demandesList = Array.isArray(demandes) ? demandes : demandes ? [demandes] : [];
 
+  // Transformer demandes en tableau
+  let demandesList = [];
+
+  if (Array.isArray(demandes)) {
+    demandesList = demandes;
+  } else if (demandes) {
+    demandesList = [demandes];
+  }
+
+
+  // Ouvrir modal
   const handleOpenContactModal = (item) => {
+
     setSelectedTechnician(item);
+
     setMessageContent("");
     setSendSuccess(false);
     setSendError("");
   };
 
+
+  // Fermer modal
   const handleCloseModal = () => {
+
     setSelectedTechnician(null);
+
     setMessageContent("");
     setSendSuccess(false);
     setSendError("");
   };
 
+
+  // Envoyer message
   const handleSendMessageSubmit = async (e) => {
+
     e.preventDefault();
-    if (!messageContent.trim() || !selectedTechnician) return;
+
+    if (!messageContent.trim()) {
+      return;
+    }
+
+    if (!selectedTechnician) {
+      return;
+    }
 
     setSendError("");
-    try {
-      const res = await sendMessage(selectedTechnician.id, { 
-        message: messageContent 
-      });
 
-      if (res) {
+    try {
+
+      const response = await sendMessage(
+        selectedTechnician.id,
+        {
+          message: messageContent
+        }
+      );
+
+      if (response) {
+
         setSendSuccess(true);
+
         setTimeout(() => {
           handleCloseModal();
         }, 1500);
+
       } else {
-        setSendError("Une erreur est survenue lors de l'envoi du message.");
+
+        setSendError(
+          "Une erreur est survenue lors de l'envoi du message."
+        );
       }
-    } catch (err) {
-      console.error("Erreur envoi message:", err);
-      setSendError("Impossible d'envoyer le message. Veuillez réessayer.");
+
+    } catch (error) {
+
+      console.log(error);
+
+      setSendError(
+        "Impossible d'envoyer le message. Veuillez réessayer."
+      );
     }
   };
 
+
+  // Annuler une demande
   const handleCancelDemande = async (requestId) => {
-    if (!window.confirm("Voulez-vous vraiment annuler cette demande ?")) return;
+
+    const confirmation = window.confirm(
+      "Voulez-vous vraiment annuler cette demande ?"
+    );
+
+    if (!confirmation) {
+      return;
+    }
 
     setCancelingId(requestId);
+
     try {
-      if (deleteServiceRequest) {
-        await deleteServiceRequest(requestId);
-        await getclientdemande();
-      }
-    } catch (err) {
-      console.error("Erreur lors de l'annulation:", err);
+
+      await deleteServiceRequest(requestId);
+
+      await getclientdemande();
+
+    } catch (error) {
+
+      console.log(error);
+
     } finally {
+
       setCancelingId(null);
     }
   };
 
-  const getStatusBadge = (status) => {
-    const s = status?.toLowerCase();
 
-    switch (s) {
-      case "in_progress":
-      case "in-progress":
-      case "accepted":
-      case "accepté":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            <PlayCircle size={13} className="text-emerald-600" />
-            En cours
-          </span>
-        );
-      case "completed":
-      case "terminé":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            <CheckCircle2 size={13} className="text-emerald-600" />
-            Terminée
-          </span>
-        );
-      case "cancelled":
-      case "annulé":
-      case "refused":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
-            <XCircle size={13} className="text-red-500" />
-            Annulée
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            <Hourglass size={13} className="text-amber-500" />
-            En attente
-          </span>
-        );
+  // Afficher le statut
+  const getStatusBadge = (status) => {
+
+    const currentStatus = status?.toLowerCase();
+
+
+    // En cours
+    if (
+      currentStatus === "in_progress" ||
+      currentStatus === "in-progress" ||
+      currentStatus === "accepted" ||
+      currentStatus === "accepté"
+    ) {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <PlayCircle
+            size={13}
+            className="text-emerald-600"
+          />
+          En cours
+        </span>
+      );
     }
+
+
+    // Terminée
+    if (
+      currentStatus === "completed" ||
+      currentStatus === "terminé"
+    ) {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <CheckCircle2
+            size={13}
+            className="text-emerald-600"
+          />
+          Terminée
+        </span>
+      );
+    }
+
+
+    // Annulée
+    if (
+      currentStatus === "cancelled" ||
+      currentStatus === "annulé" ||
+      currentStatus === "refused"
+    ) {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+          <XCircle
+            size={13}
+            className="text-red-500"
+          />
+          Annulée
+        </span>
+      );
+    }
+
+
+    // En attente
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+        <Hourglass
+          size={13}
+          className="text-amber-500"
+        />
+        En attente
+      </span>
+    );
   };
 
+
+  // Nombre des demandes en attente
   const pendingCount = demandesList.filter((item) => {
+
     const status = item.status?.toLowerCase();
-    return !status || ["pending", "en_attente", "en attente"].includes(status);
+
+    return (
+      !status ||
+      status === "pending" ||
+      status === "en_attente" ||
+      status === "en attente"
+    );
+
   }).length;
 
+
+  // Nombre des demandes en cours
   const progressCount = demandesList.filter((item) => {
+
     const status = item.status?.toLowerCase();
-    return ["in_progress", "in-progress", "accepted", "accepté"].includes(status);
+
+    return (
+      status === "in_progress" ||
+      status === "in-progress" ||
+      status === "accepted" ||
+      status === "accepté"
+    );
+
   }).length;
 
+
+  // Nombre des demandes terminées
   const completedCount = demandesList.filter((item) => {
+
     const status = item.status?.toLowerCase();
-    return ["completed", "terminé"].includes(status);
+
+    return (
+      status === "completed" ||
+      status === "terminé"
+    );
+
   }).length;
 
   return (

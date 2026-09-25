@@ -6,101 +6,131 @@ export const useservice = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Get all services
   const fetchServices = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await api.get("/services");
-      const data = Array.isArray(response.data)
-        ? response.data
-        : response.data?.services || response.data?.data || [];
+
+      let data = response.data;
+
+      if (!Array.isArray(data)) {
+        data = response.data?.services || response.data?.data || [];
+      }
+
       setServices(data);
+
       return response.data;
     } catch (err) {
-      console.error("Erreur lors de la récupération des services:", err);
+      console.log(err);
+
       setError(err.response?.data?.message || "Erreur de chargement");
+
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
+  // Add service
   const addService = async (formData) => {
     try {
-      const payload = {
+      const data = {
         title: formData.title,
         description: formData.description,
         price: parseFloat(formData.price),
         category_id: parseInt(formData.category_id, 10),
       };
-      const response = await api.post("/addService", payload);
+
+      const response = await api.post("/addService", data);
+
       const newService =
         response.data?.service || response.data?.data || response.data;
-      setServices((prev) => [newService, ...prev]);
+
+      setServices((oldServices) => [newService, ...oldServices]);
+
       return response.data;
     } catch (err) {
-      console.error("Erreur POST service:", err.response?.data || err.message);
+      console.log(err);
       throw err;
     }
   };
 
+  // Get technicien services
   const messervices = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await api.get("/servicesTechnicien");
-      const data = Array.isArray(response.data)
-        ? response.data
-        : response.data?.services || response.data?.data || [];
+
+      let data = response.data;
+
+      if (!Array.isArray(data)) {
+        data = response.data?.services || response.data?.data || [];
+      }
+
       setServices(data);
+
       return response.data;
     } catch (err) {
-      console.error(
-        "Erreur lors de la récupération des services du technicien:",
-        err,
-      );
+      console.log(err);
+
       setError(err.response?.data?.message || "Erreur de chargement");
+
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
+  // Update service
   const updateService = async (serviceId, formData) => {
     try {
-      const payload = {
+      const data = {
         title: formData.title,
         description: formData.description,
         price: parseFloat(formData.price),
         category_id: parseInt(formData.category_id, 10),
       };
-      const response = await api.put(`/updateService/${serviceId}`, payload);
+
+      const response = await api.put(`/updateService/${serviceId}`, data);
+
       const updatedService =
         response.data?.service || response.data?.data || response.data;
 
-      setServices((prev) =>
-        prev.map((service) =>
-          service.id === serviceId
-            ? { ...service, ...updatedService }
-            : service,
-        ),
+      setServices((oldServices) =>
+        oldServices.map((service) => {
+          if (service.id === serviceId) {
+            return {
+              ...service,
+              ...updatedService,
+            };
+          }
+
+          return service;
+        }),
       );
+
       return response.data;
     } catch (err) {
-      console.error("Erreur PUT service:", err.response?.data || err.message);
+      console.log(err);
       throw err;
     }
   };
 
+  // Delete service
   const deleteService = async (serviceId) => {
     try {
       await api.delete(`/deleteService/${serviceId}`);
-      setServices((prev) => prev.filter((service) => service.id !== serviceId));
-    } catch (err) {
-      console.error(
-        "Erreur lors de la suppression du service:",
-        err.response?.data || err.message,
+
+      setServices((oldServices) =>
+        oldServices.filter((service) => service.id !== serviceId),
       );
+    } catch (err) {
+      console.log(err);
       throw err;
     }
   };
@@ -112,7 +142,7 @@ export const useservice = () => {
     fetchServices,
     addService,
     messervices,
-    updateService, 
+    updateService,
     deleteService,
   };
 };

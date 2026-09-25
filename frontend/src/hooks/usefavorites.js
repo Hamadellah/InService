@@ -7,6 +7,7 @@ export const useFavorites = () => {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
 
+  // Get favorites
   const getFavorites = async () => {
     setLoading(true);
     setError(null);
@@ -14,23 +15,33 @@ export const useFavorites = () => {
     try {
       const response = await api.get("/getfavorites");
 
-      const data =
-        response.data?.favorites || response.data?.data || response.data || [];
+      let data = response.data;
 
-      setFavorites(Array.isArray(data) ? data : []);
+      if (response.data?.favorites) {
+        data = response.data.favorites;
+      } else if (response.data?.data) {
+        data = response.data.data;
+      }
+
+      if (Array.isArray(data)) {
+        setFavorites(data);
+      } else {
+        setFavorites([]);
+      }
 
       return response.data;
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.message || "Erreur lors du chargement des favoris";
+      setError(
+        err.response?.data?.message || "Erreur lors du chargement des favoris",
+      );
 
-      setError(errorMsg);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
+  // Add favorite
   const makeFavorite = async (serviceId) => {
     setLoading(true);
     setError(null);
@@ -43,46 +54,46 @@ export const useFavorites = () => {
 
       return response.data;
     } catch (err) {
-      const errorMsg =
+      setError(
         err.response?.data?.message ||
-        "Une erreur est survenue lors de l'ajout du favori";
+          "Une erreur est survenue lors de l'ajout du favori",
+      );
 
-      setError(errorMsg);
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-const deleteFavorite = async (technicienId) => {
-  setLoading(true);
-  setError(null);
-  setMessage(null);
+  // Delete favorite
+  const deleteFavorite = async (technicienId) => {
+    setLoading(true);
+    setError(null);
+    setMessage(null);
 
-  try {
-    const response = await api.delete(`/deleteFavorite/${technicienId}`);
+    try {
+      const response = await api.delete(`/deleteFavorite/${technicienId}`);
 
-    setMessage(response.data?.message || "Favori supprimé avec succès!");
+      setMessage(response.data?.message || "Favori supprimé avec succès!");
 
-    setFavorites((prevFavorites) =>
-      prevFavorites.filter(
-        (fav) => Number(fav.technicien_id) !== Number(technicienId),
-      ),
-    );
+      setFavorites((prevFavorites) =>
+        prevFavorites.filter(
+          (favorite) => Number(favorite.technicien_id) !== Number(technicienId),
+        ),
+      );
 
-    return response.data;
-  } catch (err) {
-    const errorMsg =
-      err.response?.data?.message ||
-      "Une erreur est survenue lors de la suppression du favori";
+      return response.data;
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Une erreur est survenue lors de la suppression du favori",
+      );
 
-    setError(errorMsg);
-
-    throw err;
-  } finally {
-    setLoading(false);
-  }
-};
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     favorites,

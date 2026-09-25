@@ -20,19 +20,23 @@ import {
 } from "lucide-react";
 
 export default function TechnicienDashboard() {
+
+  // Hooks
   const {
     services,
     loading,
     addService,
     messervices,
   } = useservice();
-  
+
   const {
     categories,
     loading: categoriesLoading,
     fetchCategories,
   } = usecategory();
 
+
+  // States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -46,58 +50,142 @@ export default function TechnicienDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
+
+  // Charger les services et catégories
   useEffect(() => {
     messervices();
     fetchCategories();
   }, []);
 
-  const servicesList = Array.isArray(services)
-    ? services
-    : services?.data || services?.services || [];
 
-  const categoriesList = Array.isArray(categories)
-    ? categories
-    : categories?.data || categories?.categories || [];
+  // Transformer services en tableau
+  let servicesList = [];
 
+  if (Array.isArray(services)) {
+    servicesList = services;
+  } else if (services?.data) {
+    servicesList = services.data;
+  } else if (services?.services) {
+    servicesList = services.services;
+  }
+
+
+  // Transformer categories en tableau
+  let categoriesList = [];
+
+  if (Array.isArray(categories)) {
+    categoriesList = categories;
+  } else if (categories?.data) {
+    categoriesList = categories.data;
+  } else if (categories?.categories) {
+    categoriesList = categories.categories;
+  }
+
+
+  // Trouver le nom d'une catégorie
   const getCategoryName = (categoryId) => {
-    const category = categoriesList.find(
-      (cat) => Number(cat.id) === Number(categoryId)
-    );
 
-    return category?.name || "Catégorie";
+    const category = categoriesList.find((cat) => {
+      return Number(cat.id) === Number(categoryId);
+    });
+
+    if (category) {
+      return category.name;
+    }
+
+    return "Catégorie";
   };
 
-  const usedCategories = new Set(
-    servicesList
-      .map((service) => service.category_id)
-      .filter(Boolean)
-  ).size;
 
+  // Compter les catégories utilisées
+  const categoryIds = [];
+
+  servicesList.forEach((service) => {
+
+    if (
+      service.category_id &&
+      !categoryIds.includes(service.category_id)
+    ) {
+      categoryIds.push(service.category_id);
+    }
+
+  });
+
+  const usedCategories = categoryIds.length;
+
+
+  // Rechercher un service
   const filteredServices = servicesList.filter((service) => {
-    const search = searchTerm.toLowerCase().trim();
 
-    if (!search) {
+    const search = searchTerm
+      .toLowerCase()
+      .trim();
+
+    // Si aucune recherche
+    if (search === "") {
       return true;
     }
 
-    return (
-      service.title?.toLowerCase().includes(search) ||
-      service.description?.toLowerCase().includes(search) ||
-      service.category_name?.toLowerCase().includes(search) ||
-      service.name?.toLowerCase().includes(search) ||
-      service.city?.toLowerCase().includes(search)
-    );
+    const title =
+      service.title?.toLowerCase() || "";
+
+    const description =
+      service.description?.toLowerCase() || "";
+
+    const category =
+      service.category_name?.toLowerCase() || "";
+
+    const name =
+      service.name?.toLowerCase() || "";
+
+    const city =
+      service.city?.toLowerCase() || "";
+
+
+    if (title.includes(search)) {
+      return true;
+    }
+
+    if (description.includes(search)) {
+      return true;
+    }
+
+    if (category.includes(search)) {
+      return true;
+    }
+
+    if (name.includes(search)) {
+      return true;
+    }
+
+    if (city.includes(search)) {
+      return true;
+    }
+
+    return false;
   });
 
+
+  // Modifier les champs du formulaire
   const handleChange = (e) => {
+
+    const name = e.target.name;
+    const value = e.target.value;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
+
+  // Fermer le modal
   const handleCloseModal = () => {
-    if (submitting) return;
+
+    // Ne pas fermer pendant l'ajout
+    if (submitting) {
+      return;
+    }
 
     setIsModalOpen(false);
     setFormError("");
@@ -110,15 +198,21 @@ export default function TechnicienDashboard() {
     });
   };
 
+
+  // Ajouter un service
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     setSubmitting(true);
     setFormError("");
 
     try {
+
+      // Ajouter le service
       await addService(formData);
 
+      // Vider le formulaire
       setFormData({
         title: "",
         description: "",
@@ -126,20 +220,28 @@ export default function TechnicienDashboard() {
         category_id: "",
       });
 
+      // Fermer le modal
       setIsModalOpen(false);
 
+      // Recharger les services
       await messervices();
-    } catch (err) {
-      console.error(err);
 
-      setFormError(
-        err.response?.data?.message ||
-          "Erreur lors de l'ajout du service. Vérifiez vos données."
-      );
+    } catch (error) {
+
+      console.log(error);
+
+      const message =
+        error.response?.data?.message ||
+        "Erreur lors de l'ajout du service. Vérifiez vos données.";
+
+      setFormError(message);
+
     } finally {
+
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-[#f5f7f6] text-slate-900">

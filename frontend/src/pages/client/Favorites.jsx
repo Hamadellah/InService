@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 
 export default function Favorites() {
+
+  // Hook favorites
   const {
     favorites,
     loading,
@@ -28,75 +30,98 @@ export default function Favorites() {
     deleteFavorite,
   } = useFavorites();
 
+
+  // States
   const [removingId, setRemovingId] = useState(null);
   const [imageErrors, setImageErrors] = useState({});
 
-  useEffect(() => {
-    const loadFavorites = async () => {
-      try {
-        await getFavorites();
-      } catch (err) {
-        console.error("Erreur chargement favoris:", err);
-      }
-    };
 
-    loadFavorites();
+  // Charger les favoris au démarrage
+  useEffect(() => {
+    getFavorites();
   }, []);
 
-  useEffect(() => {
-    console.log("FAVORITES COMPLETS:", favorites);
-  }, [favorites]);
 
-  const favoritesList = Array.isArray(favorites)
-    ? favorites
-    : favorites?.data ||
-      favorites?.favorites ||
-      [];
+  // Transformer favorites en tableau
+  let favoritesList = [];
 
+  if (Array.isArray(favorites)) {
+    favoritesList = favorites;
+  } else if (favorites?.data) {
+    favoritesList = favorites.data;
+  } else if (favorites?.favorites) {
+    favoritesList = favorites.favorites;
+  }
+
+
+  // Si l'image ne fonctionne pas
   const handleImageError = (id) => {
-    setImageErrors((prev) => ({
-      ...prev,
-      [id]: true,
-    }));
+
+    setImageErrors((oldErrors) => {
+      return {
+        ...oldErrors,
+        [id]: true,
+      };
+    });
   };
 
-  const getFavoriteKey = (fav, index) => {
-    return (
-      fav.favorite_id ||
-      fav.id ||
-      fav.technicien_id ||
-      fav.technicien?.id ||
-      index
-    );
+
+  // Récupérer un ID unique pour chaque favori
+  const getFavoriteKey = (favorite, index) => {
+
+    if (favorite.favorite_id) {
+      return favorite.favorite_id;
+    }
+
+    if (favorite.id) {
+      return favorite.id;
+    }
+
+    if (favorite.technicien_id) {
+      return favorite.technicien_id;
+    }
+
+    if (favorite.technicien?.id) {
+      return favorite.technicien.id;
+    }
+
+    return index;
   };
 
-  const getTechnicienId = (fav) => {
-    return (
-      fav.technicien_id ??
-      fav.technicien?.id ??
-      fav.technician_id ??
-      fav.technician?.id ??
-      null
-    );
+
+  // Récupérer ID du technicien
+  const getTechnicienId = (favorite) => {
+
+    if (favorite.technicien_id != null) {
+      return favorite.technicien_id;
+    }
+
+    if (favorite.technicien?.id != null) {
+      return favorite.technicien.id;
+    }
+
+    if (favorite.technician_id != null) {
+      return favorite.technician_id;
+    }
+
+    if (favorite.technician?.id != null) {
+      return favorite.technician.id;
+    }
+
+    return null;
   };
 
+
+  // Supprimer un favori
   const handleRemoveFavorite = async (technicienId) => {
-    console.log(
-      "TECHNICIEN ID ENVOYÉ AU DELETE:",
-      technicienId
-    );
 
-    if (
-      technicienId === null ||
-      technicienId === undefined
-    ) {
-      console.error(
-        "Technicien ID introuvable"
-      );
-
+    // Vérifier si ID existe
+    if (technicienId === null || technicienId === undefined) {
+      console.log("Technicien ID introuvable");
       return;
     }
 
+    // Empêcher plusieurs suppressions en même temps
     if (removingId !== null) {
       return;
     }
@@ -104,26 +129,18 @@ export default function Favorites() {
     setRemovingId(technicienId);
 
     try {
-      const response =
-        await deleteFavorite(technicienId);
 
-      console.log(
-        "DELETE FAVORITE RESPONSE:",
-        response
-      );
+      await deleteFavorite(technicienId);
 
+      // Recharger la liste
       await getFavorites();
-    } catch (err) {
-      console.error(
-        "ERREUR DELETE FAVORITE:",
-        err
-      );
 
-      console.error(
-        "RESPONSE DELETE:",
-        err?.response?.data
-      );
+    } catch (error) {
+
+      console.log(error);
+
     } finally {
+
       setRemovingId(null);
     }
   };

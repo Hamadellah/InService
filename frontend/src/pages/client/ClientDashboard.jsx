@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 
 export default function ClientDashboard() {
+
+  // Hooks
   const {
     services,
     loading: loadingServices,
@@ -53,6 +55,8 @@ export default function ClientDashboard() {
     makeFavorite,
   } = useFavorites();
 
+
+  // States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
 
@@ -68,54 +72,71 @@ export default function ClientDashboard() {
 
   const [requestedServices, setRequestedServices] = useState({});
 
+
+  // Charger les données
   const loadDashboardData = async () => {
     try {
-      await Promise.all([
-        fetchServices(),
-        fetchCategories(),
-      ]);
+      await fetchServices();
+      await fetchCategories();
 
-      if (getclientdemande) {
-        const res = await getclientdemande();
+      const response = await getclientdemande();
 
-        const userRequests = Array.isArray(res)
-          ? res
-          : res?.data || [];
+      let demandes = response;
 
-        const requestsMap = {};
-
-        userRequests.forEach((req) => {
-          const serviceId =
-            req.service_id || req.service?.id;
-
-          if (serviceId) {
-            requestsMap[serviceId] = req.id;
-          }
-        });
-
-        setRequestedServices(requestsMap);
+      if (!Array.isArray(demandes)) {
+        demandes = response?.data || [];
       }
-    } catch (err) {
-      console.error(
-        "Erreur lors du chargement des données:",
-        err
-      );
+
+      const requests = {};
+
+      demandes.forEach((demande) => {
+        const serviceId =
+          demande.service_id || demande.service?.id;
+
+        if (serviceId) {
+          requests[serviceId] = demande.id;
+        }
+      });
+
+      setRequestedServices(requests);
+
+    } catch (error) {
+      console.log(error);
     }
   };
 
+
+  // Charger les données au démarrage
   useEffect(() => {
     loadDashboardData();
   }, []);
 
-  const rawServices = Array.isArray(services)
-    ? services
-    : services?.data || services?.services || [];
 
-  const rawCategories = Array.isArray(categories)
-    ? categories
-    : categories?.data || categories?.categories || [];
+  // Services
+  let rawServices = services;
 
+  if (!Array.isArray(rawServices)) {
+    rawServices =
+      services?.data ||
+      services?.services ||
+      [];
+  }
+
+
+  // Categories
+  let rawCategories = categories;
+
+  if (!Array.isArray(rawCategories)) {
+    rawCategories =
+      categories?.data ||
+      categories?.categories ||
+      [];
+  }
+
+
+  // Recherche + filtre catégorie
   const filteredServices = rawServices.filter((service) => {
+
     const serviceTitle =
       service.description ||
       service.title ||
@@ -126,25 +147,29 @@ export default function ClientDashboard() {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
-    const matchesCategory = selectedCategory
-      ? Number(service.category_id) ===
-        Number(selectedCategory)
-      : true;
+    let matchesCategory = true;
+
+    if (selectedCategory) {
+      matchesCategory =
+        Number(service.category_id) ===
+        Number(selectedCategory);
+    }
 
     return matchesSearch && matchesCategory;
   });
 
+
+  // Ajouter aux favoris
   const handleToggleFavorite = async (serviceId) => {
     try {
       await makeFavorite(serviceId);
     } catch (error) {
-      console.error(
-        "Erreur lors de la mise à jour du favori:",
-        error
-      );
+      console.log(error);
     }
   };
 
+
+  // Ouvrir modal
   const handleOpenModal = (serviceId) => {
     setSelectedServiceId(serviceId);
 
@@ -157,8 +182,13 @@ export default function ClientDashboard() {
     setIsModalOpen(true);
   };
 
+
+  // Fermer modal
   const handleCloseModal = () => {
-    if (submitting) return;
+
+    if (submitting) {
+      return;
+    }
 
     setIsModalOpen(false);
     setSelectedServiceId(null);
@@ -170,6 +200,8 @@ export default function ClientDashboard() {
     });
   };
 
+
+  // Envoyer demande
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -186,6 +218,7 @@ export default function ClientDashboard() {
       await loadDashboardData();
 
       setTimeout(() => {
+
         setIsModalOpen(false);
         setSelectedServiceId(null);
         setSuccessMessage(null);
@@ -194,51 +227,59 @@ export default function ClientDashboard() {
           description: "",
           scheduled_date: "",
         });
+
       }, 1200);
-    } catch (err) {
-      console.error(
-        "Erreur lors de la création de la demande:",
-        err
-      );
+
+    } catch (error) {
+      console.log(error);
     }
   };
 
+
+  // Annuler demande
   const handleCancelRequest = async (serviceId) => {
+
     const requestId = requestedServices[serviceId];
 
     if (!requestId) {
-      console.error(
-        "ID de demande introuvable pour ce service"
-      );
+      console.log("ID de demande introuvable");
       return;
     }
 
-    if (
-      window.confirm(
-        "Voulez-vous vraiment annuler cette demande ?"
-      )
-    ) {
-      try {
-        await deleteServiceRequest(requestId);
+    const confirmation = window.confirm(
+      "Voulez-vous vraiment annuler cette demande ?"
+    );
 
-        setRequestedServices((prev) => {
-          const updated = { ...prev };
+    if (!confirmation) {
+      return;
+    }
 
-          delete updated[serviceId];
+    try {
+      await deleteServiceRequest(requestId);
 
-          return updated;
-        });
-      } catch (err) {
-        console.error(
-          "Erreur lors de l'annulation:",
-          err
-        );
-      }
+      setRequestedServices((oldRequests) => {
+
+        const newRequests = {
+          ...oldRequests
+        };
+
+        delete newRequests[serviceId];
+
+        return newRequests;
+      });
+
+    } catch (error) {
+      console.log(error);
     }
   };
 
+
+  // Image URL
   const getImageUrl = (image) => {
-    if (!image) return null;
+
+    if (!image) {
+      return null;
+    }
 
     if (
       image.startsWith("http://") ||
@@ -249,6 +290,7 @@ export default function ClientDashboard() {
 
     return `http://127.0.0.1:8000/storage/${image}`;
   };
+
 
   return (
     <div className="min-h-full bg-[#f5f7f6] p-4 sm:p-6 lg:p-8">

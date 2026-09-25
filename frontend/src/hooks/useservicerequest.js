@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import api from "../services/api";
 
 export const useServiceRequest = () => {
@@ -22,6 +22,7 @@ export const useServiceRequest = () => {
       const errorMessage =
         err.response?.data?.message ||
         "Une erreur est survenue lors de la demande.";
+
       setError(errorMessage);
       throw err;
     } finally {
@@ -32,14 +33,17 @@ export const useServiceRequest = () => {
   const deleteServiceRequest = async (requestId) => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await api.delete(`/deleteServiceRequest/${requestId}`);
+
       setServiceRequest(null);
       return response.data;
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
         "Une erreur est survenue lors de la suppression de la demande.";
+
       setError(errorMessage);
       throw err;
     } finally {
@@ -47,30 +51,37 @@ export const useServiceRequest = () => {
     }
   };
 
-  const getServiceRequests = useCallback(async () => {
+  const getServiceRequests = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await api.get("/serviceRequests");
+
       const data = Array.isArray(response.data)
         ? response.data
         : response.data?.data || [];
+
       setServiceRequest(data);
+
       return data;
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
         "Une erreur est survenue lors de la récupération des demandes.";
+
       setError(errorMessage);
+
       return [];
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   const updateServiceRequest = async (requestId, updatedData) => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await api.put(
         `/updateServiceRequestStatus/${requestId}`,
@@ -92,6 +103,7 @@ export const useServiceRequest = () => {
       const errorMessage =
         err.response?.data?.message ||
         "Une erreur est survenue lors de la mise à jour de la demande.";
+
       setError(errorMessage);
       throw err;
     } finally {
@@ -99,32 +111,38 @@ export const useServiceRequest = () => {
     }
   };
 
-  const getclientdemande = useCallback(async () => {
+  const getclientdemande = async () => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await api.get("/clientServiceRequests");
+
       const data = Array.isArray(response.data)
         ? response.data
         : response.data?.data || [];
+
       setServiceRequest(data);
+
       return data;
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
         "Une erreur est survenue lors de la récupération des demandes.";
+
       setError(errorMessage);
+
       return [];
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   return {
     loading,
     error,
     serviceRequest,
-    demandes: serviceRequest, 
+    demandes: serviceRequest,
     makeServiceRequest,
     deleteServiceRequest,
     getServiceRequests,
